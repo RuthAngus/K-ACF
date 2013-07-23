@@ -5,12 +5,12 @@
 # Spots 5 does all 24 stars
 # Spots 6 names stars as numbers not strings
 
-
+import random
 import numpy
 import spot_sim_ruth5
 import scipy
 import glob
-import ACF_star_spot6
+import ACF_star_spot7
 import ss_period_plots3
 import ss_index2
 import pylab
@@ -20,11 +20,11 @@ import pyfits
 # This is the master function that calls everything below.
 
 #======================================================
-def run_master():                                      ##
-    spot_gen(1,[5])
-    # spot_gen(8, [5,2,1])                             ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)  
+def run_master():
+    spot_gen(10,[5])
+    # ####spot_gen(8, [5,2,1])                             ## (8 x number of periods, 3 x spot lifetimes = 24 light curves) 
     add_to_real(1, 1)
-    # add_to_real(10, 4)                                    ## (inject into 10 Kepler light curves with 4 different
+    ####add_to_real(10, 4)                                    ## (inject into 10 Kepler light curves with 4 differen-t
     ss_index2.index('3')                             ## amplitudes = 960 light curves)
     ss_index2.index('4')                             ##
     ss_index2.index('5')                             ## (Index lightcurves for the ACF code)
@@ -37,11 +37,13 @@ def run_master():                                      ##
     ss_index2.index('12')                            ##
     ss_index2.index('13')                            ##
     ss_index2.index('14')                            ##
-    run_ACF(1)                                          ## (Calculate ACF for 1 lc) 1 = 1 x 1 x 1 x 1
-    #run_ACF(960)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
-    # recording_period_measurements(960)               ## (make note of the periods measured)
-    #period_plots(960)                                ## (Produce period results for each quarter)
-    # compare()                                        ## (Compare true vs measured periods)
+    run_ACF(10)                                          ## (Calculate ACF for 1 lc) 1 = 1 x 1 x 1 x 1
+    ####run_ACF(960)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
+    recording_period_measurements(10)
+    ####recording_period_measurements(960)               ## (make note of the periods measured)
+    period_plots(10)
+    ####period_plots(960)                                ## (Produce period results for each quarter)
+    compare()                                        ## (Compare true vs measured periods)
     return                                             ##
 #======================================================
 
@@ -65,16 +67,19 @@ def spot_gen(no_periods, taus):
         # Generate light curves with 3 values of tau
         tau = taus[i]
         for index in range(0,no_periods):
+            b = [6,7,8,9]
+            numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/testing%s.txt' %n, b)
             # Create lightcurves for 24 stars: 3 spot lifetimes and 8 periods.
             # Generate random values for period that are uniform in log space.
         
             print 'Star %s...' %(index+1)
-        
-            random_gen = numpy.random.uniform(low = 0.0, high = 2.0)
-            myperiod = [10**random_gen]
-            print 'Period =', myperiod
-            save_period_in_txt_file = float(myperiod[0])
             
+            ''' Try generating numbers from a normal distribution '''
+            myperiod = [random.gauss(3, 2)]
+            #random_gen = numpy.random.uniform(low = 0.0, high = 2.0)
+            #myperiod = [10**random_gen]
+            save_period_in_txt_file = float(myperiod[0])
+
 
             # These are lengths of time that correspond to quarters 3-6, 7-10
             # and 11-14 respectively in days.
@@ -87,7 +92,11 @@ def spot_gen(no_periods, taus):
                                          myperiod = myperiod, star_name = n, spot_tau = tau)
             grid = [grid[0], grid[1], grid[2], grid[3], save_period_in_txt_file]
             ''' grid contains [number of spots, filling factor, amplitude, noise, period] '''
-            numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%stesttxt' %n, grid)
+            print '!!!!!!!!!!!!!!!!!!!!!!', 'grid', grid
+            a = [1,2,3,4]
+            numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/testing%s.txt' %n, a)
+            numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%stest.txt' %n, grid)
+            print '11111111111'
             n += 1
     return
 #-------------------------------------------------------------------------------------------
@@ -100,7 +109,8 @@ def add_to_real(number_of_kplr_lcs, number_of_amps):
     if number_of_kplr_lcs == 10:
         names = ['010972873', '011137075', '011502597', '011717120', '005607242', \
              '006370489', '006442183', '006531928', '006603624', '009574283']
-    else: names = ['010972873']
+    elif number_of_kplr_lcs == 1:
+        names = ['010972873']
 
     for n in range(0, len(names)):
         print 'Kepler lc = ', names[n]
@@ -112,12 +122,13 @@ def add_to_real(number_of_kplr_lcs, number_of_amps):
         ''' Setting number of amplitudes '''
         if number_of_amps == 4:
             Amps = [1.0, 5.0, 10.0, 15.0]
-        else: Amps = [15.0]
+        elif number_of_amps == 1:
+            Amps = [15.0]
             
         for a in range(0, len(Amps)):
             print 'Amplitude = ', Amps[a]
             
-            for star in range(1, 25):
+            for star in range(1, 4):
                 print 'Star = ', star
 
                 for quarter in range(0,12):
@@ -150,7 +161,10 @@ def add_to_real(number_of_kplr_lcs, number_of_amps):
                 
 
                     '''Load simulated data'''
-                    mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_000%stest.png.mat'\
+                    print quarter+3, star
+                    mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat'\
+                    #mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/orig_sim_%s.png.mat'\
+                    #mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/testtesttest%s.png.mat'\
                                            %((quarter+3), star))
                     pars = mat['pars']; ts = mat['ts']
                     lc2 = mat['ts']
@@ -211,7 +225,7 @@ def run_ACF(no_stars):
     test_list = ['ss3','ss4','ss5', 'ss6', 'ss7', 'ss8', 'ss9', 'ss10', 'ss11', 'ss12', 'ss13', 'ss14']
     test_list2 = ['3','4','5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
     for a in range(0,len(test_list)):
-        ACF_star_spot6.corr_run(test_list[a], test_list2[a], number_of_stars = no_stars+1)
+        ACF_star_spot7.corr_run(test_list[a], test_list2[a], number_of_stars = no_stars+1)
     return
 #-----------------------------------------------------------------------------------------------------------------
 
@@ -225,13 +239,18 @@ def recording_period_measurements(no_stars):
     list_of_quarters = ['ss3','ss4','ss5', 'ss6', 'ss7', 'ss8', 'ss9', 'ss10', 'ss11', 'ss12', 'ss13', 'ss14']
     for year in list_of_quarters:
         data = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/results.txt' %year).T
-        #KID = data[0][1:]
         KID = range(1,no_stars+1)
         ACF_period =data[1][1:]
         period_error = data[6][1:]
         sine_period = data[2][1:]
+        # KID = data[0][0]
+        # #KID = range(1,no_stars+1)
+        # ACF_period =data[1][0]
+        # print ACF_period
+        # period_error = data[6][0]
+        # sine_period = data[2][0]
         numpy.savetxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt' %(year,year), \
-                      numpy.transpose((KID, ACF_period, period_error, sine_period)))
+            numpy.transpose((KID, ACF_period, period_error, sine_period))) 
     return
 #-----------------------------------------------------------------------------------------------------------------
 

@@ -256,7 +256,10 @@ def runSim(amp = 0.01, N = 1, doplot = True, dur = 50, number_of_data_sets = 12,
                             dur = 50, myperiod = myperiod, quarter = q)
             if doplot == True:
                 pylab.savefig('%s/%s/sim_%04dtest.png' % (ROOTDIR, (q+3), (star_name+1)))
-                scipy.io.savemat('%s/%s/orig_sim_%s.png' % (ROOTDIR, (q+3), (star_name+1)), \
+                #scipy.io.savemat('%s/%s/orig_sim_%s.png' % (ROOTDIR, (q+3), (star_name+1)), \
+                #scipy.io.savemat('%s/%s/testtesttest%s.png' % (ROOTDIR, (q+3), (star_name+1)), \
+                #                 {'pars': pars, 'ts': ts})
+                scipy.io.savemat('%s/%s/sim_%s.png' % (ROOTDIR, (q+3), (star_name+1)), \
                                  {'pars': pars, 'ts': ts})
             
     return pars 
