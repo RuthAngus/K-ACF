@@ -23,9 +23,9 @@ import pyfits
 
 #======================================================
 def run_master():
-    # spot_gen(10,[5])
+    spot_gen(10,[5])
     # # ####spot_gen(8, [5,2,1])           ## (8 x number of periods, 3 x spot lifetimes = 24 light curves) 
-    # add_to_real(1, 1)
+    add_to_real(1, 1)
     # ####add_to_real(10, 4)                       ## (inject into 10 Kepler light curves with 4 differen-t
     # ss_index2.index('3')                             ## amplitudes = 960 light curves)
     # ss_index2.index('4')                             ##
@@ -343,7 +343,7 @@ def compare():
         #pylab.legend()
         print 'True period = ', period
         true_periods.append(period)
-        star_list.append(star_list)
+        star_list.append(stars[i])
         period_list.append(periods[i])
 
     x = numpy.arange(0,10,0.1)
@@ -355,9 +355,12 @@ def compare():
     pylab.ylim(min(true_periods) - 1.5, max(true_periods) + 1.5)
     pylab.title('Measured vs true period')
     pylab.savefig('/Users/angusr/angusr/ACF/star_spot_sim/resultstest')
+    print star_list
+    print true_periods
+    print period_list
     numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
                   (star_list, true_periods, period_list))
-    
+   
     return
 #-----------------------------------------------------------------------------------------------------------------    
 
