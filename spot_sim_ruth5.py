@@ -12,8 +12,9 @@ import pyfits
 
 ROOTDIR = '/Users/angusr/angusr/ACF/star_spot_sim'
 
+#tau = 1.5
 def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
-         tau = 1.5, diffrot = 0.0, \
+         tau = 30.5, diffrot = 0.0, \
          dur = 20.0, samp = 0.01, noise = 0.001, doplot = False, myperiod = [10.0], Amplitude = 1.0, quarter = 3):
 
          # spots.py calls runSim which calls mklc

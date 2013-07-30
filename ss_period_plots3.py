@@ -99,7 +99,6 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
 
 
     '''Loop over all targets'''
-    print len(all_targs)
     for i in range(0,len(all_targs)):
         
         if years == True:
@@ -107,7 +106,6 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
             errors = [errorsq36[i], errorsq710[i], errorsq1114[i]]
 
         elif ind_quarters == True:
-            print i, periods3
             periods = [periods3[i], periods4[i], periods5[i], periods6[i], periods7[i], periods8[i], periods9[i], periods10[i], periods11[i], \
                        periods12[i], periods13[i], periods14[i]]
             errors = [errors3[i], errors4[i], errors5[i], errors6[i], errors7[i], errors8[i], errors9[i], errors10[i], errors11[i], \
@@ -124,7 +122,6 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         
         '''only plot if a period measurement was made. '''
         for j in range(0,len(KID_method)):
-            #print j, len(periods)
             if periods[j] > 0. and errors[j] > 0.:
                 pylab.errorbar(KID1s[j], periods[j], yerr = errors[j], marker = 'o', color = 'b', markersize = 5)
             else: pylab.axvline(j+1, linewidth = 0.5, color = 'r', linestyle = '--')
@@ -147,7 +144,6 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         KID_string = numpy.str(KID_string)
         pylab.title('%s' %KID_string)
 
-        #print periods
         
         '''Making sure that all measurements lie within 15% of the harmonic lines'''
         number_of_measurements = 0
