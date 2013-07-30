@@ -160,7 +160,6 @@ def add_to_real(number_of_kplr_lcs, number_of_amps, grid_list):
                 
 
                     '''Load simulated data'''
-                    print quarter+3, star
                     mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat'\
                     #mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/orig_sim_%s.png.mat'\
                     #mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/testtesttest%s.png.mat'\
@@ -202,7 +201,15 @@ def add_to_real(number_of_kplr_lcs, number_of_amps, grid_list):
                     scipy.io.savemat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat' \
                                         %((quarter+3), counter), {'pars': pars, 'ts': ts})
 
-                grid_list[counter].extend(names[n], Amps[a])
+
+                print 'Amplitude = ', Amps[a]
+                print 'Light curve = ', names[n] 
+                print grid_list[counter]
+                grid_list[counter].extend(float(names[n]))
+                print names[n]
+                print type(Amps[a]), type(names[n])
+                print grid_list[counter]
+                grid_list[counter].extend(Amps[a])
                 numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %counter)
                 #numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/KIC_amp_%s.txt' %counter, \
                 #                      (numpy.transpose((counter, int(names[n]), Amps[a]))))
