@@ -119,7 +119,6 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         pylab.figure(1)
         pylab.clf()
 
-        
         '''only plot if a period measurement was made. '''
         for j in range(0,len(KID_method)):
             if periods[j] > 0. and errors[j] > 0.:
@@ -129,12 +128,13 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         upper_y_lim = max(periods) + 5
         pylab.xlim(0, len(KID_meth_string)+1)
         pylab.ylim(0,upper_y_lim)
-
+        
         '''Adding harmonic lines'''
         pylab.axhline(acf_median, linewidth = 0.5, color = 'b')
         pylab.axhline(acf_median/2., linewidth = 0.5, color = 'b', linestyle = '--')
         period_multiple = 0; harmonic=2
-        if acf_median != 0:
+        
+        if acf_median > 0:
             while period_multiple < upper_y_lim:
                 period_multiple = acf_median*harmonic
                 pylab.axhline(period_multiple, linewidth = 0.5, color = 'b', linestyle = '--')
@@ -192,8 +192,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         #if years == True and selected == True:
             #print max(periods) - min(periods)
         pylab.savefig('/Users/angusr/angusr/ACF/%s/%s.pdf' %(fig_dir, KID_string))
-        # raw_input('enter')
-
+        
         '''The difference between newfigs2 and newfigs3 is that newfigs3 has data that has had the ACF code run on it more recently newfigs5 has all data, all_data_figs has all data, ind_qs_figs will have individual quarters only and year_figs will have just long term data'''
 
     
