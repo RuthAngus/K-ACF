@@ -188,7 +188,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         
           
         pylab.xticks(xtick_values, xtick_labels)
-        print KID_string
+        #print KID_string
         #if years == True and selected == True:
             #print max(periods) - min(periods)
         pylab.savefig('/Users/angusr/angusr/ACF/%s/%s.pdf' %(fig_dir, KID_string))

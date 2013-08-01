@@ -119,18 +119,19 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 
     # loop over KIDs
     #for x in scipy.arange(len(id_list)):
+    ex = 0
     x = 0
     for y in range(0, len(names)):
 	for z in range(0, len(Amps)):
 		kid_x = 1
-		for w in range(0,24):
+		for w in range(0,960):
 			#print 'id_list =', id_list
 			# lc_file = ('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%sa%sKIC%s.png.mat' \
 			# 	       %(quarter_sel2,(x+1), Amps[z], names[y]))
 			lc_file = ('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat' \
-			    	       %(quarter_sel2,(x+1)))
+			    	       %(quarter_sel2,(ex+1)))
 
-			print 'Quarter = ', quarter_sel2, 'Star = ', x+1
+			print 'Quarter = ', quarter_sel2, 'Star = ', ex+1
 			print 'star = ', lc_file
 
 			#read in index and create list of unique KIDs
@@ -145,7 +146,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			lc_tab.add_column('flux', flux)
 			lc_tab.add_column('flux_pdc', flux)
 
-			print 'x = %d/%d, kid = %s' %(x+1, len(id_list), kid_x)
+			print 'ex = %d/%d, kid = %s' %(ex+1, len(id_list), kid_x)
 
 			qt_max = [0., max(lc_tab.time)]
 			tablen = 1
@@ -155,12 +156,11 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			pylab.clf()
 			pylab.subplot(4,1,1)
 
-			print kid_x, x
 			true_per_dat = numpy.genfromtxt\
 			    ('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%stest.txt' %(kid_x))
 			true_per = true_per_dat[4]
 
-			pylab.title('ID: %s, True Period = %s' %(kid_x, true_per), fontsize = 16)
+			pylab.title('ID: %s, True Period = %s' %(x, true_per), fontsize = 16)
 			for j in scipy.arange(tablen):
 				if j % 2 == 0:
 					pylab.axvspan(qt_max[j], qt_max[j+1], facecolor = 'k', alpha=0.1)
@@ -180,7 +180,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			pylab.figure(2,(12, 9))
 			pylab.clf()
 			pylab.subplot(3,1,1)
-			pylab.title('ID: %s' %(kid_x), fontsize = 16)
+			pylab.title('ID: %s' %(x), fontsize = 16)
 			for j in scipy.arange(tablen):
 				if j % 2 == 0:
 					pylab.axvspan(qt_max[j], qt_max[j+1], facecolor = 'k', alpha=0.1)
@@ -208,11 +208,11 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 
 			acf_tab, acf_per_pos, acf_per_height, acf_per_err, locheight, asym,  = \
 			    acf_calc(quarter_sel, time = lc_tab.time, flux = lc_tab.flux, interval = gap_days, \
-				     kid = kid_x, max_psearch_len = max_psearch_len)
+				     kid = ex, max_psearch_len = max_psearch_len)
 
 			pgram_tab, sine_per[x], sine_height[x] = \
 			    pgram_calc(quarter_sel, time = lc_tab.time, flux = lc_tab.flux, \
-				       interval = gap_days, kid = kid_x, max_psearch_len = max_psearch_len)
+				       interval = gap_days, kid = ex, max_psearch_len = max_psearch_len)
 
 
 			pylab.figure(1)
@@ -233,7 +233,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			pylab.xlim(0, pgram_tab.period.max())
 			pylab.ylabel('Periodogram')
 			pylab.savefig('%s/PDCQ%s_output/plots_pgram/%sa%sKIC%s_pgram.png' \
-				      %(dir, quarter_sel, kid_x, Amps[z], names[y]))
+				      %(dir, quarter_sel, ex, Amps[z], names[y]))
 
 			pylab.figure(12)
 			pylab.clf()
@@ -247,7 +247,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 				med_dlag_per[x], dlag_per_err[x], acf_peak_per[x], h1[x], w1[x], lh1[x], \
 				    hlocgrad[x], hloc_grad_scatter[x], width_grad[x], width_grad_scatter[x], \
 				    num_of_peaks[x], harmonic_det[x], sel_peaks, one_peak_only, peak_ratio =\
-				    plot_stats(quarter_sel, lc_tab.time, lc_tab.flux, kid_x, acf_per_pos, \
+				    plot_stats(quarter_sel, lc_tab.time, lc_tab.flux, ex, acf_per_pos, \
 					       acf_per_height, acf_per_err, locheight, asym)
 
 
@@ -290,7 +290,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 				# variability stats
 				print 'calculating var for P_med...'
 				amp_all[x], amp_per[x], per_cent, var_arr_real = \
-				    calc_var(quarter_sel, kid = kid_x, time_in = lc_tab.time, \
+				    calc_var(quarter_sel, kid = ex, time_in = lc_tab.time, \
 					     flux = lc_tab.flux, period = acf_peak_per[x])
 
 				pylab.figure(1)
@@ -306,13 +306,13 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 				#pylab.savefig('%s/PDCQ%s_output/plots_acf/%sa%sKIC%s_full.png'\
 				#% (dir, quarter_sel, kid_x, Amps[z], names[y]))
 				pylab.savefig('%s/PDCQ%s_output/plots_acf/%s_full.png'\
-					      % (dir, quarter_sel, kid_x))
+					      % (dir, quarter_sel, ex))
 
 				# make zoomed in plot to show periodicity
 				pylab.figure(5,(12, 9))
 				pylab.clf()
 				pylab.subplot(3,1,1)
-				pylab.title('Zoom of ID: %s, showing peak period and av lag period' %kid_x)
+				pylab.title('Zoom of ID: %s, showing peak period and av lag period' %x)
 				maxpts = 40.0
 				if scipy.floor(lc_tab.time.max() / acf_peak_per[x]) < maxpts:
 					maxpts = float(scipy.floor(lc_tab.time.max() / acf_peak_per[x]))
@@ -344,9 +344,9 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 				pylab.xlim(min(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]),\
 					   max(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]))
 				pylab.savefig('%s/PDCQ%s_output/plots_z/%sa%sKIC%s_zoom.png' \
-					      %(dir, quarter_sel, kid_x, Amps[z], names[y]))
+					      %(dir, quarter_sel, ex, Amps[z], names[y]))
 
-				print '**************************', 'KID = ', kid_x, 'PEAK HEIGHT = ', \
+				print '**************************', 'KID = ', ex, 'PEAK HEIGHT = ', \
 				    max(acf_per_height[:2]), 'LOCAL PEAK HEIGHT = ', lh1[x]
 
 			t_stats = atpy.Table()
@@ -356,13 +356,17 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			t_stats.add_column('asym', asym)
 			t_stats.add_column('locheight', locheight)
 			savefilen = '%s/PDCQ%s_output/dat_files/%sa%sKIC%s_stats.txt' \
-			    %(dir, quarter_sel, kid_x, Amps[z], names[y])
+			    %(dir, quarter_sel, ex, Amps[z], names[y])
 			atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
 
 			print 'PERIOD = ', period[x]
 			# raw_input('enter')
+			ex += 1
 			x += 1
-			kid_x += 1
+			if kid_x == 24:
+				kid_x = 1
+			else:
+				kid_x += 1
 			
 
     #print type(my_KID_list)
@@ -371,7 +375,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
     #print type(my_KID_list)
     #print len(period)
     #print len(my_KID_list)
-    kid_x = [float(kid_x)]
+    kid_x = [float(x)]
     #print period, kid_x
 
     print t
