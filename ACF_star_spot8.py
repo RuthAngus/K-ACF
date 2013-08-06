@@ -124,7 +124,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
     for y in range(0, len(names)):
 	for z in range(0, len(Amps)):
 		kid_x = 1
-		for w in range(0,960):
+		for w in range(0,number_of_stars):
 			#print 'id_list =', id_list
 			# lc_file = ('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%sa%sKIC%s.png.mat' \
 			# 	       %(quarter_sel2,(x+1), Amps[z], names[y]))
