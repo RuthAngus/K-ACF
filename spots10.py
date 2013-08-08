@@ -24,8 +24,9 @@ from matplotlib.pyplot import step
 
 #======================================================
 def run_master():                                      ##
-    # spot_gen(24)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
-    # add_to_real(24)                           ## (inject into 10 Kepler light curves with 4 differen-t
+    nstars = 100
+    # spot_gen(nstars)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
+    # add_to_real(nstars)                           ## (inject into 10 Kepler light curves with 4 differen-t
     # ss_index2.index('3')                             ## amplitudes = 960 light curves)
     # ss_index2.index('4')                             ##
     # ss_index2.index('5')                             ## (Index lightcurves for the ACF code)
@@ -38,12 +39,13 @@ def run_master():                                      ##
     # ss_index2.index('12')                            ##
     # ss_index2.index('13')                            ##
     # ss_index2.index('14')                            ##
-    run_ACF(1120)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
-    recording_period_measurements(1120)               ## (make note of the periods measured)
-    period_plots(1120)                                ## (Produce period results for each quarter)
-    compare()                                        ## (Compare true vs measured periods)
-    population(1120)                                  ##
-    completeness(1120)                                ##
+    # run_ACF(1000)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
+    # recording_period_measurements(960)               ## (make note of the periods measured)
+    # period_plots(960)                                ## (Produce period results for each quarter)
+    compare(960)                                        ## (Compare true vs measured periods)
+    # population(960)                                  ##
+    # completeness(960)                                ##
+    # random_test()
     return                                             ##
 #======================================================
 
@@ -58,6 +60,8 @@ def run_master():                                      ##
 #-----------------------------------------------------------------------------------------------------------------
 def spot_gen(nstars):
 
+    period_check = np.zeros(nstars)
+
     print 'Generating light curves'
     ROOTDIR = '/Users/angusr/angusr/ACF/star_spot_sim'
     
@@ -68,20 +72,21 @@ def spot_gen(nstars):
         print 'Star %s...' %(index+1)
             
         rand_period = np.random.uniform(low = 0.0, high = 2.0)
-        myperiod = [10**rand_period]
-        print 'Period = ', myperiod[0]
+        myperiod = 10**rand_period
+        print 'Period = ', myperiod
+        period_check[index] = myperiod
 
         # Generate random values of tau that are between 1 and 10 (uniform in log space too)
 
         rand_tau = np.random.uniform(low = 0.0, high = 1.0)
-        mytau = [10**rand_tau]
-        print 'Tau = ', mytau[0]
+        mytau = 10**rand_tau
+        print 'Tau = ', mytau
         
         grid = spot_sim_ruth6.runSim(number_of_data_sets = 12, \
                                      myperiod = myperiod, star_name = index, spot_tau = mytau)
-        grid = [grid[0], grid[1], grid[2], grid[3], float(myperiod[0]), float(mytau[0])]
+        grid = [grid[0], grid[1], grid[2], grid[3], myperiod, mytau]
         ''' grid contains [number of spots, filling factor, amplitude, noise, period, tau] '''
-        np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %(index+1), grid)
+        np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/tests/sim_period%s.txt' %(index+1), grid)
     return 
 #-------------------------------------------------------------------------------------------
 
@@ -183,15 +188,15 @@ def add_to_real(nstars):
                 scipy.io.savemat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat' \
                                     %((quarter+3), counter), {'pars': pars, 'ts': ts})
 
-                ''' Save parameters! '''
-                grid_list = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %star)
-                np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %counter, \
-                              (np.transpose((counter, int(names[n]), myamp[0], grid_list[0], \
-                                                grid_list[1], grid_list[2], grid_list[3], \
-                                  grid_list[4], grid_list[5]))))
+            ''' Save parameters! '''
+            grid_list = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %star)
+            np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %counter, \
+                            (np.transpose((counter, int(names[n]), myamp[0], grid_list[0], \
+                                            grid_list[1], grid_list[2], grid_list[3], \
+                                grid_list[4], grid_list[5]))))
                 
-                ''' Star number, KIC number, amplitude, number of spots, filling factor, amplitude, noise, period, tau '''
-                counter += 1
+            ''' Star number, KIC number, amplitude, number of spots, filling factor, amplitude, noise, period, tau '''
+            counter += 1
                         
 
     print '%s iterations' %counter
@@ -251,93 +256,159 @@ def period_plots(no_stars):
     return 
 #-----------------------------------------------------------------------------------------------------------------
 
-
-
-
 # Need to gather period information from all over the place! This should print the measured
 # period and the real period alongside each other
 # Need to get it to read the stars listed in /star_spot_sim/ combine period measurements from 
 
 #-----------------------------------------------------------------------------------------------------------------
-def compare():
+def compare(nstars):
 
-    ''' Reading in real periods '''
+    # Successful stars
     stars = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/ss_ind_quarterstest.txt')
     
     which_quarter = ['ss3','ss4','ss5', 'ss6', 'ss7', 'ss8', 'ss9',\
                      'ss10', 'ss11', 'ss12', 'ss13', 'ss14']
     
-    all_periods = []
-    all_errors = []
-    for star in range(0,len(stars)):
-        all_periods.append([])
-        all_errors.append([])
+    # all_periods = []
+    # all_errors = []
+    # #for star in range(0,len(stars)):
+    # for star in range(nstars):
+    #     all_periods.append([])
+    #     all_errors.append([])
+    
+    all_periods = np.ndarray((960, 12))
+    all_errors = np.ndarray((960, 12))
+    all_KIDs = np.ndarray((960, 12))
+    KID = np.ndarray((960, 12))
+    periods = np.ndarray((960, 12))
+    errors = np.ndarray((960, 12))
 
-    ''' Reading in results '''
-    for year in range(0, len(which_quarter)):
-        # data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%s.txt' \
-                                # %(which_quarter[year], which_quarter[year])).T
-        data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
-                                %(which_quarter[year], which_quarter[year])).T
-        KID = data[0]
-        periods = data[1]
-        errors = data[2]
-        for j in range(0,len(KID)):
-            for star in range(0, len(stars)):
-                if KID[j] == stars[star]:
-                    all_periods[star].append(periods[j])
-                    all_errors[star].append(errors[j])
-   
+    for j in range(nstars):
+        for year in range(0, len(which_quarter)):
+            data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/periods/%speriod.txt' %(which_quarter[year], j))
+            periods[j][year] = data
+            KID[j][year] = j
 
-    '''Find the weighted mean. Weights are 1/errors**2'''
+    print KID[0]
+    print KID[1]
+    
+    # ''' Reading in results (12 quarters for each star) '''
+    # for year in range(0, len(which_quarter)):
+    #         data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
+    #                              %(which_quarter[year], which_quarter[year])).T
+    #         KID.T[year] = data[0]
+    #         periods.T[year] = data[1]
+    #         errors.T[year] = data[2]
 
-    ''' Find weights '''
-    errors = all_errors
-    for i in range(0, len(all_errors)):
-        for j in range(0, len(all_errors[i])):
-            all_errors[i][j] = 1.0/((all_errors[i][j])**2)
-    weights = all_errors
+    all_periods = periods
+    #all_errors = errors
+    all_KIDs = KID
+    
+    # for j in range(nstars):
+    #     for i in range(12):
+    #         all_periods[j][i] = periods[j][i]
+    #         all_errors[j][i] = errors[j][i]
+    #         all_KIDs[j][i] = KID[j][i]
 
-    ''' Normalise weights '''
-    for i in range(0, len(weights)):
-        sum_per_star = sum(weights[i])
-        weights[i] = weights[i]/sum_per_star
-        
-    periods = np.zeros(len(stars))
+    # ''' Reading in results (12 quarters for each star) '''
+    # for year in range(0, len(which_quarter)):
+    #     data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
+    #                             %(which_quarter[year], which_quarter[year])).T
+    #     KID = data[0]
+    #     periods = data[1]
+    #     errors = data[2]
+    #     # for j in range(0,len(KID)):
+    #     #     for star in range(0, len(stars)):
+    #     #         if KID[j] == stars[star]:
+    #     #             all_periods[star].append(periods[j])
+    #     #             all_errors[star].append(errors[j])
 
-    ''' find the weighted mean and add errors in quadrature '''
-    for i in range(0, len(all_periods)):
-        periods[i] = np.average(all_periods[i], weights = weights[i])
-        errors[i] = (errors[i])**2
-        err_sum = sum(errors[i])
-        errors[i] = np.sqrt(err_sum)
+    #     for j in range(nstars):
+    #         all_periods[j].append(periods[j])
+    #         all_errors[j].append(errors[j])
 
-    ''' Print and plot results '''
+    # # Remove NANs and zeros
+    # print all_KIDs[0]
+    # for i in range(len(all_periods)):
+    #     x = np.where(np.isfinite(all_periods[i]))
+    #     all_periods[i] = all_periods[i][x]
+    #     all_errors[i] = all_errors[i][x]
+    #     x = np.where(all_periods[i] > 0)
+    #     all_periods[i] = all_periods[i][x]
+    #     all_errors[i] = all_errors[i][x]
+    #     x = np.where(all_errors[i] > 0)
+    #     all_periods[i] = all_periods[i][x]
+    #     all_errors[i] = all_errors[i][x]
+
+    print len(all_periods)
+    m_periods = []; m_errors = []; median_periods = []
+    for i in range(len(all_periods)):
+        if len(all_periods[i]) > 0:
+            per, err = weighted_mean(all_periods[i], all_errors[i])
+            m_periods.append(per); m_errors.append(err)
+            median_periods.append(np.median(all_periods[i]))
+        else:
+            m_periods.append(0); m_errors.append(0); median_periods.append(0)
+
+
+
+    
+    true_periods = []; star_list = []; period_list = []
+    for i in range(nstars):
+        print 'Star = ', i+1
+        print 'Measured period = ', m_periods[i], '+/-', m_errors[i]
+        print 'Median = ', median_periods[i]
+        data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' \
+                                   %(i+1))
+        t_period = data[7]
+        print 'True period = ', t_period
+        true_periods.append(t_period); star_list.append(i)
+        # raw_input('enter')
+
+    print len(true_periods)
+
+    diff = np.array(m_periods)/(true_periods)
+    diff = diff[diff > 0.]
+    ndiff = diff[:100]
+    ntrue_periods = true_periods[:100]
+    nm_periods = m_periods[:100]
+    p.close(3)
+    p.figure(3)
+    p.subplot(3,1,1)
+    p.plot(diff, 'k.')
+    p.subplot(3,1,2)
+    p.plot(true_periods, 'k.')
+    p.subplot(3,1,3)
+    p.plot(m_periods, 'k.')
+
+    for i in range(len(true_periods)):
+        if true_periods[i] == true_periods[1]:
+            print true_periods[i], m_periods[i], median_periods[i]
+
+
+    # m_periods = np.array(m_periods)
+    # true_periods = np.array(true_periods)
+    # x = np.where(m_periods > 0)
+    # m_periods = m_periods[x]
+    # true_periods = true_periods[x]
+
+    # for i in range(len(m_periods)):
+    #     for j in range(len(m_periods)):
+    #         if m_periods[i] == m_periods[j]:
+    #             print m_periods[i]
+
+    m_periods = median_periods
+
     p.close(2)
     p.figure(2)
-
-    true_periods = []; star_list = []; period_list = []
-    for i in range(0, len(periods)):
-        print 'Star = ', stars[i]
-        
-        print 'Measured period = ', periods[i], '+/-', errors[i]
-        trueperiod = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' \
-                                  %(int(stars[i])))
-        period = trueperiod[4]
-        #p.plot(i+1, period, 'b.')
-        #p.legend()
-        print 'True period = ', period
-        true_periods.append(period)
-        star_list.append(stars[i])
-        period_list.append(periods[i])
-
     x = np.arange(0,40,0.1)
     p.plot(x, x, 'b--')
     p.plot(.5*x, x, 'b--')
     p.plot(.333333*x, x, 'b--')
     p.plot(2*x, x, 'b--')
     p.plot(3*x, x, 'b--')
-    p.errorbar(periods, true_periods, yerr = errors, fmt = 'r.')
+    p.plot(m_periods, true_periods, 'k.')
+    #p.errorbar(m_periods, true_periods, yerr = errors, fmt = 'r.')
     p.xlabel('True Period (days)')
     p.ylabel('Measured Period (days)')
     #p.xlim(min(periods) - 0.5, max(periods) + 0.5)
@@ -346,8 +417,11 @@ def compare():
     p.ylim(0, 40)
     p.title('Measured vs true period')
     p.savefig('/Users/angusr/angusr/ACF/star_spot_sim/resultstest')
-    np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
-                  (star_list, true_periods, period_list))
+    star_list = np.array(star_list)
+    true_periods = np.array(true_periods)
+    period_list = np.array(period_list)
+    #np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
+    #              np.transpose((star_list, true_periods, period_list)))
 
     return period_list
 #-----------------------------------------------------------------------------------------------------------------    
@@ -541,24 +615,30 @@ def population(nstars):
 #-----------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------
 def weighted_mean(all_periods, all_errors):
-
-    print all_periods, all_errors
-    
+    #for i in range(len(all_errors)):
+    #    if all_errors[i] == 0.0:
+    #        all_errors[i] = 0.01
+    errors = []
     for i in range(len(all_errors)):
-        if all_errors[i] == 0.0:
-            all_errors[i] = 0.01
-    errors = all_errors
-    for i in range(len(all_errors)):
-        all_errors[i] = 1.0/((all_errors[i])**2)
-    weights = all_errors
+        errors.append(1.0/((all_errors[i])**2))
+    weights = errors
     weights = weights/sum(weights) # Normalise
     period = np.average(all_periods, weights = weights) # Find weighted mean
-    for i in range(len(errors)):
-        errors[i] = errors[i]**2 # Add errors in quadrature
-    err_sum = sum(errors)
+    for i in range(len(all_errors)):
+        all_errors[i] = all_errors[i]**2 # Add errors in quadrature
+    err_sum = sum(all_errors)
     error = np.sqrt(err_sum)
 
-    print period, error
     return period, error
 
 #-----------------------------------------------------------------------------------------------------------------
+
+def random_test():
+    periods = np.zeros(1000)
+    for i in range(1000):
+        rand_period = np.random.uniform(low = 0.0, high = 2.0)
+        periods[i] = 10**rand_period
+
+    p.close(5)
+    p.figure(5)
+    p.plot(periods, 'k.')
