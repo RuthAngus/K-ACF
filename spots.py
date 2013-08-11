@@ -294,9 +294,9 @@ def compare(nstars):
     #         periods[j][year] = data
     #         KID[j][year] = j
 
-    # print KID[0]
-    # print KID[1]
-    
+    # 
+
+    temp_KID = np.array(range(1,nstars+1))
     ''' Reading in results (12 quarters for each star) '''
     for year in range(0, len(which_quarter)):
             # data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
@@ -305,10 +305,12 @@ def compare(nstars):
             # periods.T[year] = data[1]
             # errors.T[year] = data[2]
         data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/results.txt' %which_quarter[year]).T
-        #KID.T[year] = data[0]
-        #periods.T[year] = data[1]
-        #errors.T[year] = data[2]
-        #KID=np.array(range(1,no_stars+1)); periods3=data3[1][1:]; errors3=data3[6][1:]; sine3=data3[2][1:]
+        KID.T[year] = temp_KID
+        periods.T[year] = data[1][1:]
+        errors.T[year] = data[6][1:]
+
+    print KID[0]
+    print KID[1]
 
     all_periods = periods
     all_errors = errors
