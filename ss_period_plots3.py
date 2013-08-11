@@ -5,51 +5,78 @@
 # This version is for individual quarters
 
 
-import numpy
+import numpy as np
 import scipy
 import pylab
 import atpy
 
 def period_extract(all_data = False, ind_quarters = False, years = False, no_stars = 24):
 
+
     final_KID_list = []
     ''' importing file of all KIDs'''
     all_targs = range(0,no_stars)
     #all_targs = ['01','02','03','04','05','06','07','08','09','10', ]
-    #all_targs = numpy.genfromtxt('/Users/angusr/Documents/rotation/all_targets.txt').T
+    #all_targs = np.genfromtxt('/Users/angusr/Documents/rotation/all_targets.txt').T
 
     ''' Extracting data from text files.'''
-    data3 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3_output/Periods_ss3test.txt').T
-    data4 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss4_output/Periods_ss4test.txt').T    
-    data5 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss5_output/Periods_ss5test.txt').T
-    data6 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss6_output/Periods_ss6test.txt').T
-    data7 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss7_output/Periods_ss7test.txt').T
-    data8 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss8_output/Periods_ss8test.txt').T
-    data9 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss9_output/Periods_ss9test.txt').T
-    data10 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss10_output/Periods_ss10test.txt').T
-    data11 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss11_output/Periods_ss11test.txt').T
-    data12 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss12_output/Periods_ss12test.txt').T
-    data13 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss13_output/Periods_ss13test.txt').T
-    data14 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss14_output/Periods_ss14test.txt').T
-    # data_q36 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3-6_output/Periods_ss3-6test.txt').T
-    # data_q710 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss7-10_output/Periods_ss7-10test.txt').T
-    # data_q1114 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQss11-14_output/Periods_ss11-14test.txt').T
+    data3 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3_output/results.txt').T
+    data4 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss4_output/results.txt').T
+    data5 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss5_output/results.txt').T
+    data6 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss6_output/results.txt').T
+    data7 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss7_output/results.txt').T
+    data8 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss8_output/results.txt').T
+    data9 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss9_output/results.txt').T
+    data10 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss10_output/results.txt').T
+    data11 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss11_output/results.txt').T
+    data12 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss12_output/results.txt').T
+    data13 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss13_output/results.txt').T
+    data14 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss14_output/results.txt').T
+    
+    KID3=np.array(range(1,no_stars+1)); periods3=data3[1][1:]; errors3=data3[6][1:]; sine3=data3[2][1:]
+    KID4=np.array(range(1,no_stars+1)); periods4=data4[1][1:]; errors4=data3[6][1:]; sine4=data4[2][1:]
+    KID5=np.array(range(1,no_stars+1)); periods5=data5[1][1:]; errors5=data3[6][1:]; sine5=data5[2][1:]
+    KID6=np.array(range(1,no_stars+1)); periods6=data6[1][1:]; errors6=data3[6][1:]; sine6=data6[2][1:]
+    KID7=np.array(range(1,no_stars+1)); periods7=data7[1][1:]; errors7=data3[6][1:]; sine7=data7[2][1:]
+    KID8=np.array(range(1,no_stars+1)); periods8=data8[1][1:]; errors8=data3[6][1:]; sine8=data8[2][1:]
+    KID9=np.array(range(1,no_stars+1)); periods9=data9[1][1:]; errors9=data3[6][1:]; sine9=data9[2][1:]
+    KID10=np.array(range(1,no_stars+1)); periods10=data10[1][1:]; errors10=data3[6][1:]; sine10=data10[2][1:]
+    KID11=np.array(range(1,no_stars+1)); periods11=data11[1][1:]; errors11=data3[6][1:]; sine11=data11[2][1:]
+    KID12=np.array(range(1,no_stars+1)); periods12=data12[1][1:]; errors12=data3[6][1:]; sine12=data12[2][1:]
+    KID13=np.array(range(1,no_stars+1)); periods13=data13[1][1:]; errors13=data3[6][1:]; sine13=data13[2][1:]
+    KID14=np.array(range(1,no_stars+1)); periods14=data14[1][1:]; errors14=data3[6][1:]; sine14=data14[2][1:]
+    
+    # data3 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3_output/Periods_ss3test.txt').T
+    # data4 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss4_output/Periods_ss4test.txt').T    
+    # data5 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss5_output/Periods_ss5test.txt').T
+    # data6 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss6_output/Periods_ss6test.txt').T
+    # data7 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss7_output/Periods_ss7test.txt').T
+    # data8 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss8_output/Periods_ss8test.txt').T
+    # data9 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss9_output/Periods_ss9test.txt').T
+    # data10 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss10_output/Periods_ss10test.txt').T
+    # data11 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss11_output/Periods_ss11test.txt').T
+    # data12 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss12_output/Periods_ss12test.txt').T
+    # data13 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss13_output/Periods_ss13test.txt').T
+    # data14 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss14_output/Periods_ss14test.txt').T
+    # # data_q36 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3-6_output/Periods_ss3-6test.txt').T
+    # # data_q710 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss7-10_output/Periods_ss7-10test.txt').T
+    # # data_q1114 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss11-14_output/Periods_ss11-14test.txt').T
 
-    KID3 = data3[0]; periods3 = data3[1]; errors3 = data3[2]; sine3 = data3[3]
-    KID4 = data4[0]; periods4 = data4[1]; errors4 = data4[2]; sine4 = data4[3]
-    KID5 = data5[0]; periods5 = data5[1]; errors5 = data5[2]; sine5 = data5[3]
-    KID6 = data6[0]; periods6 = data6[1]; errors6 = data6[2]; sine6 = data6[3]
-    KID7 = data7[0]; periods7 = data7[1]; errors7 = data7[2]; sine7 = data7[3]
-    KID8 = data8[0]; periods8 = data8[1]; errors8 = data8[2]; sine8 = data8[3]
-    KID9 = data9[0]; periods9 = data9[1]; errors9 = data9[2]; sine9 = data9[3]
-    KID10 = data10[0]; periods10 = data10[1]; errors10 = data10[2]; sine10 = data10[3]
-    KID11 = data11[0]; periods11 = data11[1]; errors11 = data11[2]; sine11 = data11[3]
-    KID12 = data12[0]; periods12 = data12[1]; errors12 = data12[2]; sine12 = data12[3]
-    KID13 = data13[0]; periods13 = data13[1]; errors13 = data13[2]; sine13 = data13[3]
-    KID14 = data14[0]; periods14 = data14[1]; errors14 = data14[2]; sine14 = data14[3]
-    # KIDq710 = data_q710[0]; periodsq710 = data_q710[1]; errorsq710 = data_q710[2]; sineq710 = data_q710[3]
-    # KIDq1114 = data_q1114[0]; periodsq1114 = data_q1114[1]; errorsq1114 = data_q1114[2]; sineq1114 = data_q1114[3]
-    # KIDq36 = data_q36[0]; periodsq36 = data_q36[1]; errorsq36 = data_q36[2]; sineq36 = data_q36[3]
+    # KID3 = data3[0]; periods3 = data3[1]; errors3 = data3[2]; sine3 = data3[3]
+    # KID4 = data4[0]; periods4 = data4[1]; errors4 = data4[2]; sine4 = data4[3]
+    # KID5 = data5[0]; periods5 = data5[1]; errors5 = data5[2]; sine5 = data5[3]
+    # KID6 = data6[0]; periods6 = data6[1]; errors6 = data6[2]; sine6 = data6[3]
+    # KID7 = data7[0]; periods7 = data7[1]; errors7 = data7[2]; sine7 = data7[3]
+    # KID8 = data8[0]; periods8 = data8[1]; errors8 = data8[2]; sine8 = data8[3]
+    # KID9 = data9[0]; periods9 = data9[1]; errors9 = data9[2]; sine9 = data9[3]
+    # KID10 = data10[0]; periods10 = data10[1]; errors10 = data10[2]; sine10 = data10[3]
+    # KID11 = data11[0]; periods11 = data11[1]; errors11 = data11[2]; sine11 = data11[3]
+    # KID12 = data12[0]; periods12 = data12[1]; errors12 = data12[2]; sine12 = data12[3]
+    # KID13 = data13[0]; periods13 = data13[1]; errors13 = data13[2]; sine13 = data13[3]
+    # KID14 = data14[0]; periods14 = data14[1]; errors14 = data14[2]; sine14 = data14[3]
+    # # KIDq710 = data_q710[0]; periodsq710 = data_q710[1]; errorsq710 = data_q710[2]; sineq710 = data_q710[3]
+    # # KIDq1114 = data_q1114[0]; periodsq1114 = data_q1114[1]; errorsq1114 = data_q1114[2]; sineq1114 = data_q1114[3]
+    # # KIDq36 = data_q36[0]; periodsq36 = data_q36[1]; errorsq36 = data_q36[2]; sineq36 = data_q36[3]
 
     print 'Found %d Targets in quarter 3' %len(KID3)
     print 'Found %d Targets in quarter 4' %len(KID4)
@@ -66,6 +93,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
     # print 'Found %d Targets in quarters 3-6' %len(KIDq36)
     # print 'Found %d Targets in quarters 7-10' %len(KIDq710)
     # print 'Found %d Targets in quarters 11-14' %len(KIDq1114)
+
 
     if all_data == True:
         KID_method = [KID3, KID4, KID5, KID6, KID7, KID8, KID9, KID10, KID11, KID12, KID13, KID14, KIDq04, KIDq25, KIDq59, KIDq36, KIDq710, KIDq1114, KIDq09]
@@ -98,8 +126,11 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         fig_dir = 'ss_year_figs'
 
 
+
     '''Loop over all targets'''
     for i in range(0,len(all_targs)):
+
+        print i
         
         if years == True:
             periods = [periodsq36[i], periodsq710[i], periodsq1114[i]]
@@ -112,7 +143,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
                       errors12[i], errors13[i], errors14[i]]
         
         ''' Find medians '''
-        acf_median = numpy.median(periods)
+        acf_median = np.median(periods)
         
         '''PLOTTING'''
         KID1s = range(1,len(KID_method)+1)
@@ -139,9 +170,11 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
                 period_multiple = acf_median*harmonic
                 pylab.axhline(period_multiple, linewidth = 0.5, color = 'b', linestyle = '--')
                 harmonic += 1
-            
-        KID_string = numpy.int(i)
-        KID_string = numpy.str(KID_string)
+
+
+
+        KID_string = np.int(i)
+        KID_string = np.str(KID_string)
         pylab.title('%s' %KID_string)
 
         
@@ -183,7 +216,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
                 pylab.text(0,0, 'INCONSISTENT MEASUREMENTS, require < %s outliers' %(outliers - bonus + 3))
                 selected = False
             else:
-                final_KID_list.append((numpy.float(KID_string))+1)
+                final_KID_list.append((np.float(KID_string))+1)
                 selected = True
         
           
@@ -204,5 +237,5 @@ def period_extract(all_data = False, ind_quarters = False, years = False, no_sta
         txt_tit = 'ss_yearstest'
     elif all_data == True:
         txt_tit = 'ss_all_datatest'
-    numpy.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/%s.txt' %txt_tit, final_KID_list)
+    np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/%s.txt' %txt_tit, final_KID_list)
     return

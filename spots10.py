@@ -41,11 +41,10 @@ def run_master():                                      ##
     # ss_index2.index('14')                            ##
     # run_ACF(1000)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
     # recording_period_measurements(960)               ## (make note of the periods measured)
-    # period_plots(960)                                ## (Produce period results for each quarter)
+    period_plots(960)                                ## (Produce period results for each quarter)
     compare(960)                                        ## (Compare true vs measured periods)
-    # population(960)                                  ##
-    # completeness(960)                                ##
-    # random_test()
+    population(960)                                  ##
+    completeness(960)                                ##
     return                                             ##
 #======================================================
 
@@ -227,7 +226,7 @@ def recording_period_measurements(no_stars):
     list_of_quarters = ['ss3','ss4','ss5', 'ss6', 'ss7', 'ss8', 'ss9', 'ss10', 'ss11', 'ss12', 'ss13', 'ss14']
     for year in list_of_quarters:
         data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/results.txt' %year).T
-        KID = range(1,no_stars+1)
+        KID = np.array(range(1,no_stars+1))
         ACF_period =data[1][1:]
         period_error = data[6][1:]
         sine_period = data[2][1:]
@@ -237,8 +236,13 @@ def recording_period_measurements(no_stars):
         # print ACF_period
         # period_error = data[6][0]
         # sine_period = data[2][0]
+        print type(KID), type(ACF_period), type(period_error), type(sine_period)
         np.savetxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt' %(year,year), \
-            np.transpose((KID, ACF_period, period_error, sine_period))) 
+            np.transpose((KID, ACF_period, period_error, sine_period)))
+        # file = open('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt' %(year, year), 'r')
+        # for i in range(len(KID)):
+            # file.write('%s   %s   %s   %s' %(str(period[x]), str(dlag_per_err[x]), str(sine_per[x])))
+        # file.close()
     return
 #-----------------------------------------------------------------------------------------------------------------
 
