@@ -7,8 +7,8 @@
 # Spots 9 pretty much works and includes completeness
 # Spots 10 doesn't use a grid - it generates random parameter values each time
 
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 import random
 import numpy as np
 import spot_sim_ruth6
@@ -41,7 +41,7 @@ def run_master():                                      ##
     # ss_index2.index('14')                            ##
     # run_ACF(1000)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
     # recording_period_measurements(960)               ## (make note of the periods measured)
-    period_plots(960)                                ## (Produce period results for each quarter)
+    # period_plots(960)                                ## (Produce period results for each quarter)
     compare(960)                                        ## (Compare true vs measured periods)
     population(960)                                  ##
     completeness(960)                                ##
@@ -287,25 +287,31 @@ def compare(nstars):
     periods = np.ndarray((960, 12))
     errors = np.ndarray((960, 12))
 
-    for j in range(nstars):
-        for year in range(0, len(which_quarter)):
-            data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/periods/%speriod.txt' %(which_quarter[year], j))
-            periods[j][year] = data
-            KID[j][year] = j
+    # for j in range(nstars):
+    #     for year in range(0, len(which_quarter)):
+    #         data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/periods/%speriod.txt'\
+    #                              %(which_quarter[year], j))
+    #         periods[j][year] = data
+    #         KID[j][year] = j
 
-    print KID[0]
-    print KID[1]
+    # print KID[0]
+    # print KID[1]
     
-    # ''' Reading in results (12 quarters for each star) '''
-    # for year in range(0, len(which_quarter)):
-    #         data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
-    #                              %(which_quarter[year], which_quarter[year])).T
-    #         KID.T[year] = data[0]
-    #         periods.T[year] = data[1]
-    #         errors.T[year] = data[2]
+    ''' Reading in results (12 quarters for each star) '''
+    for year in range(0, len(which_quarter)):
+            # data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/Periods_%stest.txt'\
+            #                      %(which_quarter[year], which_quarter[year])).T
+            # KID.T[year] = data[0]
+            # periods.T[year] = data[1]
+            # errors.T[year] = data[2]
+        data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ%s_output/results.txt' %which_quarter[year]).T
+        #KID.T[year] = data[0]
+        #periods.T[year] = data[1]
+        #errors.T[year] = data[2]
+        #KID=np.array(range(1,no_stars+1)); periods3=data3[1][1:]; errors3=data3[6][1:]; sine3=data3[2][1:]
 
     all_periods = periods
-    #all_errors = errors
+    all_errors = errors
     all_KIDs = KID
     
     # for j in range(nstars):
