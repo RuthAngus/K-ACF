@@ -19,9 +19,9 @@ import scipy.io
 
 from scipy import signal
 import KOI_tools_b12 as kt
-from misc import filter
-from misc import gls
-from misc import mpfit
+import filter
+import gls
+import mpfit
 
 
 dir = '/Users/angusr/angusr/ACF'

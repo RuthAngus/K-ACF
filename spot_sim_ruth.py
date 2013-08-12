@@ -61,7 +61,7 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
 
     
     
-    myperiod = float(myperiod[0])
+    # myperiod = float(myperiod[0])
     print 'Period = ', myperiod
     dur = (max(time2) - min(time2))
 
