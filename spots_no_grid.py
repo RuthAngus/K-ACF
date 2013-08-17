@@ -25,24 +25,25 @@ from matplotlib.pyplot import step
 #======================================================
 def run_master():                                      ##
     nstars = 1000
-    spot_gen(nstars)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
-    add_to_real(nstars)                           ## (inject into 10 Kepler light curves with 4 differen-t
-    ss_index.index('3')                             ## amplitudes = 960 light curves)
-    ss_index.index('4')                             ##
-    ss_index.index('5')                             ## (Index lightcurves for the ACF code)
-    ss_index.index('6')                             ##
-    ss_index.index('7')                             ##
-    ss_index.index('8')                             ##
-    ss_index.index('9')                             ##
-    ss_index.index('10')                            ##
-    ss_index.index('11')                            ##
-    ss_index.index('12')                            ##
-    ss_index.index('13')                            ##
-    ss_index.index('14')                            ##
+    # spot_gen(nstars)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
+    # add_to_real(nstars)                           ## (inject into 10 Kepler light curves with 4 differen-t
+    # ss_index.index('3')                             ## amplitudes = 960 light curves)
+    # ss_index.index('4')                             ##
+    # ss_index.index('5')                             ## (Index lightcurves for the ACF code)
+    # ss_index.index('6')                             ##
+    # ss_index.index('7')                             ##
+    # ss_index.index('8')                             ##
+    # ss_index.index('9')                             ##
+    # ss_index.index('10')                            ##
+    # ss_index.index('11')                            ##
+    # ss_index.index('12')                            ##
+    # ss_index.index('13')                            ##
+    # ss_index.index('14')                            ##
     run_ACF(nstars)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
-    recording_period_measurements(960)               ## (make note of the periods measured)
-    period_plots(stars)                                ## (Produce period results for each quarter)
-    compare(stars)                                        ## (Compare true vs measured periods)
+    recording_period_measurements(nstars)               ## (make note of the periods measured)
+    period_plots(nstars)                                ## (Produce period results for each quarter)
+    compare(nstars)                             
+    # (Compare true vs measured periods)
     # population(stars)                                  #
     completeness()                                ##
     # random_test()
@@ -140,7 +141,7 @@ def add_to_real(nstars):
     
     counter = 1
 
-    for n in range(nstars):  
+    for i in range(nstars):  
 
         # Choose Kepler lc at random
         sel_lc = np.random.randint(0,10)
@@ -150,14 +151,14 @@ def add_to_real(nstars):
         rand_amp = np.random.uniform(low = 0.0, high = np.log10(15))
         myamp = [10**rand_amp]
             
-        print 'Star = ', star, 'Kplr lc = %s' %names[sel_lc], 'Amp = %s' %myamp, '#%s' %counter
+        print 'Star = ', i, 'Kplr lc = %s' %names[sel_lc], 'Amp = %s' %myamp, '#%s' %counter
 
         for quarter in range(0,12):
             print 'quarter = ', quarter+3
 
             '''Load simulated data'''
             mat = scipy.io.loadmat('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%s.png.mat'\
-                                   %((quarter+3), star))
+                                   %((quarter+3), (i+1)))
             pars = mat['pars']; ts = mat['ts']
             lc2 = mat['ts']
             sim_time = lc2[0]; sim_lc =  lc2[2]
@@ -190,7 +191,7 @@ def add_to_real(nstars):
                                 %((quarter+3), counter), {'pars': pars, 'ts': ts})
 
         ''' Save parameters! '''
-        grid_list = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %star)
+        grid_list = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %(i+1))
         np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %counter, \
                         (np.transpose((counter, int(names[sel_lc]), myamp[0], grid_list[0], \
                                         grid_list[1], grid_list[2], grid_list[3], \
@@ -391,6 +392,7 @@ def completeness():
         for j in range(len(list_of_success)):
             if kid_x == list_of_success[j]:
                  success_period.append(true_period) # FIXME: Do I want the true period or the measured period here?
+                 
 
     all_bins = np.histogram(np.log10(true_periods), bins = nbins)
     success_bins = np.histogram(np.log10(success_period), bins = nbins)
@@ -424,15 +426,46 @@ def completeness():
     
     
 
-    #print 'CALCULATING RELIABILITY...'
-    ''' Load measured period '''
-    m_period = []; m_err = []
-    for j in range(3, 14):
-        data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' %j).T
-        periods = data[1][1:][i]
-        errors = data[6][1:][i]
+    # Reliability - figure out which stars have period measurements. Then compare their real periods
+    # with the measured periods. number of stars with detected periods/number of stars with
+    # measured periods within 20% of real.
+    # Stars with period measurements = list_of_success
+    # Their true periods = success_period
+    # Their measured periods...
+    measured_periods = np.zeros(len(list_of_success))
+    uncert = np.zeros(len(list_of_success))
+    median_periods = []
+
     
-        #print true_periods
+
+    all_KIDs = np.ndarray((len(list_of_success), 12))
+    KID = np.ndarray((len(list_of_success), 12))
+    periods = np.ndarray((len(list_of_success), 12))
+    errors = np.ndarray((len(list_of_success), 12))
+
+    ''' Reading in results (12 quarters for each star) '''
+    for year in range(3,14):
+        data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCssQ%s_output/results.txt' %year).T
+        periods.T[year] = data[1][1:]
+        errors.T[year] = data[6][1:]
+    
+   
+    for i in range(len(periods)):
+        if len(periods[i]) > 0:
+            per, err = weighted_mean(periods[i], errors[i])
+            m_periods.append(per); m_errors.append(err)
+            median_periods.append(np.median(all_periods[i]))
+        else:
+            m_periods.append(0); m_errors.append(0); median_periods.append(0)
+
+
+    # Was its period successfully measured?
+    for i in range(1, 1000):
+        for j in range(len(list_of_success)):
+            if i == list_of_success[j]:
+                success_period.append(true_period) # FIXME: Do I want the true period or the measured period here?
+                 
+    
     return
 
 #-----------------------------------------------------------------------------------------------------------------

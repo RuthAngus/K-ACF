@@ -124,7 +124,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
     for y in range(0, len(names)):
 	for z in range(0, len(Amps)):
 		kid_x = 1
-		for w in range(0,number_of_stars):
+		for w in range(0,number_of_stars-1):
 			#print 'id_list =', id_list
 			# lc_file = ('/Users/angusr/angusr/ACF/star_spot_sim/%s/sim_%sa%sKIC%s.png.mat' \
 			# 	       %(quarter_sel2,(x+1), Amps[z], names[y]))
@@ -157,7 +157,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			pylab.subplot(4,1,1)
 
 			true_per_dat = numpy.genfromtxt\
-			    ('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%stest.txt' %(kid_x))
+			    ('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %(kid_x))
 			true_per = true_per_dat[4]
 
 			pylab.title('ID: %s, True Period = %s' %(x, true_per), fontsize = 16)
@@ -363,10 +363,7 @@ def corr_run(quarter_sel, quarter_sel2, tr_out = False, tr_type = None, number_o
 			# raw_input('enter')
 			ex += 1
 			x += 1
-			if kid_x == 24:
-				kid_x = 1
-			else:
-				kid_x += 1
+			kid_x += 1
 			
 
     #print type(my_KID_list)

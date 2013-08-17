@@ -25,26 +25,26 @@ from matplotlib.pyplot import step
 #======================================================
 def run_master():                                      ##
     nstars = 100
-    spot_gen(nstars)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
-    add_to_real(nstars)                           ## (inject into 10 Kepler light curves with 4 differen-t
-    ss_index2.index('3')                             ## amplitudes = 960 light curves)
-    ss_index2.index('4')                             ##
-    ss_index2.index('5')                             ## (Index lightcurves for the ACF code)
-    ss_index2.index('6')                             ##
-    ss_index2.index('7')                             ##
-    ss_index2.index('8')                             ##
-    ss_index2.index('9')                             ##
-    ss_index2.index('10')                            ##
-    ss_index2.index('11')                            ##
-    ss_index2.index('12')                            ##
-    ss_index2.index('13')                            ##
-    ss_index2.index('14')                            ##
-    run_ACF(1000)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
+    # spot_gen(nstars)                                       ## (8 x number of periods, 3 x spot lifetimes = 24 light curves)
+    # add_to_real(nstars)                           ## (inject into 10 Kepler light curves with 4 differen-t
+    # ss_index.index('3')                             ## amplitudes = 960 light curves)
+    # ss_index.index('4')                             ##
+    # ss_index.index('5')                             ## (Index lightcurves for the ACF code)
+    # ss_index.index('6')                             ##
+    # ss_index.index('7')                             ##
+    # ss_index.index('8')                             ##
+    # ss_index.index('9')                             ##
+    # ss_index.index('10')                            ##
+    # ss_index.index('11')                            ##
+    # ss_index.index('12')                            ##
+    # ss_index.index('13')                            ##
+    # ss_index.index('14')                            ##
+    # run_ACF(1000)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
     ##### recording_period_measurements(960)               ## (make note of the periods measured)
-    period_plots(1000)                                ## (Produce period results for each quarter)
+    # period_plots(1000)                                ## (Produce period results for each quarter)
     # compare(1000)                                        ## (Compare true vs measured periods)
     # population(1000)                                  #
-    # completeness()                                ##
+    completeness()                                ##
     # random_test()
     return                                             ##
 #======================================================
@@ -355,7 +355,7 @@ def compare(nstars):
     true_periods = np.array(true_periods)
     period_list = np.array(period_list)
     np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
-                  np.transpose((star_list, true_periods, median_periods)))
+                  np.transpose((star_list, true_periods, m_periods)))
 
     p.close(3)
     p.figure(3)
@@ -383,9 +383,9 @@ def completeness():
     print 'CALCULATING COMPLETENESS...'
 
     ''' Bin stars according to period '''
-    nbins = 20
+    nbins = 10
     success_period = []
-
+    
     for i in range(len(star_list)):
         # Load true parameter values
         data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
@@ -393,7 +393,6 @@ def completeness():
             amp = data[5]; noise = data[6]; true_period = data[7]; tau = data[8]
 
         # Was its period successfully measured?
-        list_of_success = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/ss_ind_quarterstest.txt')
         for j in range(len(list_of_success)):
             if kid_x == list_of_success[j]:
                  success_period.append(true_period) # FIXME: Do I want the true period or the measured period here?
@@ -402,24 +401,31 @@ def completeness():
     success_bins = np.histogram(np.log10(success_period), bins = nbins)
     print 'Truth = ', all_bins[0]
     print 'Successfully measured = ', success_bins[0]
-    
+
+    b_space = 2./float(nbins)
     p.close(1)
     p.figure(1)
+    
     p.subplot(3,1,1)
     p.ylabel('True (number)')
-    step(np.arange(2./float(nbins),(2 + 2./float(nbins)),2./float(nbins)), all_bins[0])
+    step(np.arange(b_space,(2 + b_space), b_space), all_bins[0])
     #p.xlim(0,2)
+    p.ylim(0, max(all_bins[0])+20)
+    
     p.subplot(3,1,2)
-    step(np.arange(2./float(nbins),(2 + 2./float(nbins)),2./float(nbins)), success_bins[0])
+    step(np.arange(b_space,(2 + b_space),b_space), success_bins[0])
     p.ylabel('Success (number)')
+    p.ylim(0, max(success_bins[0])+20)
+    
     p.subplot(3,1,3)
     p.ylabel('Completeness')
-    complete = np.zeros(len(all_bins[0]))
+    complete = np.zeros(nbins)
     for i in range(len(complete)):
                    complete[i] = (float(success_bins[0][i])/float(all_bins[0][i]))*100
     print 'Completeness = ', complete
-    step(np.arange(2./float(nbins),(2 + 2./float(nbins)),2./float(nbins)), complete)
+    step(np.arange(b_space,(2 + b_space),b_space), complete)
     p.xlabel('Log(Period)')
+    p.ylim(0, max(complete)+20)
     
     
 
@@ -597,6 +603,21 @@ def random_test():
     # p.plot(range(200,300), np.log10(true_periods), 'k.')
     # p.plot(range(300,400), np.log10(true_periods), 'k.')
     # p.plot(range(400,500), np.log10(true_periods), 'k.')
+
+    ''' Plotting as close to original periods as I can'''
+
+    p.close(10)
+    p.figure(10)
+    p.subplot(1,2,1)
+    orig_periods = np.zeros(100)
+    for i in range(100):
+        data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %(i+1)).T
+        p.axhline(np.log10(data[4]), color = 'k')
+    p.subplot(1,2,2)
+    for i in range(100):
+        data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
+        p.axhline(np.log10(data[7]), color = 'k')
     
+   
     return
     
