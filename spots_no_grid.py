@@ -333,8 +333,8 @@ def compare(nstars):
     p.close(1)
     p.figure(1)
     x = np.arange(0,40,0.1)
-    p.plot(x, 1.2*x, 'r--')
-    p.plot(x, 0.8*x, 'r--')
+    p.plot(x, 1.05*x, 'r--')
+    p.plot(x, 0.95*x, 'r--')
     p.plot(x, x, 'b--')
     p.plot(.5*x, x, 'b--')
     p.plot(.333333*x, x, 'b--')
@@ -439,30 +439,18 @@ def completeness():
 
     p.subplot(3,1,1)
     p.ylabel('Period')
-    complete = np.zeros(len(all_bins[0]))
-    for i in range(len(complete)):
-                   complete[i] = (float(success_bins[0][i])/float(all_bins[0][i]))*100
-    print 'Completeness = ', complete
-    step(all_bins[1][1:], complete)
+    step(all_bins[1][1:], period_complete)
     p.xlabel('Log(Period)')
-    p.ylim(0, max(complete)+20)
+    p.ylim(0, max(period_complete)+20)
 
     p.subplot(3,1,2)
     p.ylabel('Tau')
-    tau_complete = np.zeros(len(tau_bins[0]))
-    for i in range(len(tau_complete)):
-                   tau_complete[i] = (float(tau_bins[0][i])/float(all_taus[0][i]))*100
-    print 'Completeness = ', tau_complete
     step(all_taus[1][1:], tau_complete)
     p.xlabel('Log(Tau)')
     p.ylim(0, max(tau_complete)+20)
 
     p.subplot(3,1,3)
     p.ylabel('Amplitude')
-    amp_complete = np.zeros(len(amp_bins[0]))
-    for i in range(len(amp_complete)):
-                   amp_complete[i] = (float(amp_bins[0][i])/float(all_amps[0][i]))*100
-    print 'Completeness = ', amp_complete
     step(all_amps[1][1:], amp_complete)
     p.xlabel('Log(Amplitude)')
     p.ylim(0, max(amp_complete)+20)
@@ -481,13 +469,51 @@ def completeness():
     m_success_period_err = np.array(m_success_period_err)
 
     m_bins = np.histogram(np.log10(m_success_period), bins = np.arange(0, 2., b_space))
-    diff = success_period - m_success_period
-    percent = ( diff / success_period )*100
-    reliability = np.where(percent < 10)
-    print 'Reliability = ', len(reliability[0])
-    contamination = np.where(percent > 10)
-    print 'Contamination = ', len(contamination[0])
+
+    reliability = np.zeros(nbins)
+    contamination = np.zeros(nbins)
+    for i in range(nbins):
+        sbin = []; mbin = []
+        for j in range(len(success_period)):
+            if b_space*i < np.log10(success_period[j]) < b_space*(i+1):
+                sbin.append(success_period[j])
+                mbin.append(m_success_period[j])
+
+        if len(sbin) > 0:
+            reliability[i], contamination[i] = comp_rel_cont(np.array(sbin), np.array(mbin))
+        else:
+            reliability[i] = 0.
+            contamination[i] = 0.
     
+    p.close(6)
+    p.figure(6)
+    p.subplot(3,1,1)
+    step(np.arange(0, (2.-2./nbins), 2./nbins), period_complete)
+    p.ylabel('Completeness')
+    p.ylim(0, 120)
+    p.subplot(3,1,2)
+    step(np.arange(0, 2., 2./nbins), reliability)
+    p.ylabel('Reliability')
+    p.ylim(0, 120)
+    p.subplot(3,1,3)
+    step(np.arange(0, 2., 2./nbins), contamination)
+    p.ylabel('Contamination')
+    p.xlabel('Log(Period)')
+    p.ylim(0, 120)
+    
+#-----------------------------------------------------------------------------------------------------------------
+def comp_rel_cont(t_success_period, m_success_period):
+    diff = t_success_period - m_success_period
+    percent = ( diff / t_success_period )*100
+    x1 = np.where(percent < 5)
+    reliability = ( float(len(x1[0])) / float(len(t_success_period)) )*100
+    # print 'Reliability = ', reliability
+    x2 = np.where(percent > 5)
+    contamination = ( float(len(x2[0])) / float(len(t_success_period)) )*100
+    # print 'Contamination = ', contamination
+    
+    return reliability, contamination
+
 #-----------------------------------------------------------------------------------------------------------------
 def completeness_plots(all_bins, success_bins):
     
@@ -513,7 +539,9 @@ def completeness_plots(all_bins, success_bins):
     p.ylim(0, max(complete)+20)
 
     return complete
+#-----------------------------------------------------------------------------------------------------------------
 
+    
 #-----------------------------------------------------------------------------------------------------------------
 def weighted_mean(all_periods, all_errors):
     #for i in range(len(all_errors)):
