@@ -39,9 +39,9 @@ def run_master():                                      ##
     # ss_index.index('12')                            ##
     # ss_index.index('13')                            ##
     # ss_index.index('14')                            ##
-    run_ACF(nstars)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
-    recording_period_measurements(nstars)               ## (make note of the periods measured)
-    period_plots(nstars)                                ## (Produce period results for each quarter)
+    # run_ACF(nstars)                                     ## (Calculate ACFs for all 960 lcs) 960 = 3 x 8 x 10 x 4
+    # recording_period_measurements(nstars)               ## (make note of the periods measured)
+    # period_plots(nstars)                                ## (Produce period results for each quarter)
     compare(nstars)                             
     # (Compare true vs measured periods)
     # population(stars)                                  #
@@ -295,7 +295,8 @@ def compare(nstars):
     all_periods = periods
     all_errors = errors
     all_KIDs = KID
-    
+
+    ''' Finding mean and median measured periods '''
     m_periods = []; m_errors = []; median_periods = []
     for i in range(len(all_periods)):
         if len(all_periods[i]) > 0:
@@ -306,6 +307,7 @@ def compare(nstars):
             m_periods.append(0); m_errors.append(0); median_periods.append(0)
 
 
+    ''' Finding true periods'''
     true_periods = []; star_list = []; period_list = []
     for i in range(nstars):
         # print 'Star = ', i+1
@@ -328,9 +330,11 @@ def compare(nstars):
             n += 1
         
 
-    p.close(2)
-    p.figure(2)
+    p.close(1)
+    p.figure(1)
     x = np.arange(0,40,0.1)
+    p.plot(x, 1.2*x, 'r--')
+    p.plot(x, 0.8*x, 'r--')
     p.plot(x, x, 'b--')
     p.plot(.5*x, x, 'b--')
     p.plot(.333333*x, x, 'b--')
@@ -351,14 +355,15 @@ def compare(nstars):
     true_periods = np.array(true_periods)
     period_list = np.array(period_list)
     np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
-                  np.transpose((star_list, true_periods, m_periods)))
+                  np.transpose((star_list, true_periods, m_periods, m_errors)))
 
-    p.close(3)
-    p.figure(3)
-    p.subplot(1,2,1)
-    p.plot(np.log10(true_periods), 'k.')
-    p.subplot(1,2,2)
-    p.plot(np.log10(test_periods), 'k.')
+    '''Testing randomness'''
+    # p.close(3)
+    # p.figure(3)
+    # p.subplot(1,2,1)
+    # p.plot(np.log10(true_periods), 'k.')
+    # p.subplot(1,2,2)
+    # p.plot(np.log10(test_periods), 'k.')
 
     return period_list
 #-----------------------------------------------------------------------------------------------------------------    
@@ -372,219 +377,143 @@ def completeness():
     # Load measured vs true stats
     data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt').T
     list_of_success = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/ss_ind_quarterstest.txt')
-    star_list = data[0]; m_periods = data[2]; true_periods = data[1]
-
+    star_list = data[0]; m_periods = data[2]; true_periods = data[1]; m_err = data[3]
+    
     print 'Total number of simulated stars = %s' %len(star_list)
     print 'Total number of measured periods = %s' %len(list_of_success)
     print 'CALCULATING COMPLETENESS...'
 
     ''' Bin stars according to period '''
-    nbins = 10
+    nbins = 20
     success_period = []
-    
+    m_success_period = []
+    m_success_period_err = []
+    success_tau = []
+    success_amp = []
+
+    taus = np.zeros(len(star_list))
+    Amps = np.zeros(len(star_list))
     for i in range(len(star_list)):
         # Load true parameter values
         data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
-        kid_x = data[0]; KIC_no = str(data[1]); Amp = data[2]; nspots = data[3]; ff = data[4]; \
-            amp = data[5]; noise = data[6]; true_period = data[7]; tau = data[8]
+        kid_x = data[0]; KIC_no = str(data[1]); Amps[i] = data[2]; nspots = data[3]; ff = data[4]; \
+            amp = data[5]; noise = data[6]; taus[i] = data[8] #FIXME: check which amps
 
-        # Was its period successfully measured?
+        # Was its period successfully measured? FIXME: check period plots!
         for j in range(len(list_of_success)):
             if kid_x == list_of_success[j]:
-                 success_period.append(true_period) # FIXME: Do I want the true period or the measured period here?
-                 
+                 success_period.append(true_periods[i]) # FIXME: Do I want the true period or the measured period here?
+                 m_success_period.append(m_periods[i])
+                 m_success_period_err.append(m_err[i])
+                 success_tau.append(taus[i])
+                 success_amp.append(Amps[i])
+                 if np.log10(true_periods[i]) > 1.4:
+                     print 'SUCCESS!', true_periods[i]
 
-    all_bins = np.histogram(np.log10(true_periods), bins = nbins)
-    success_bins = np.histogram(np.log10(success_period), bins = nbins)
+    ''' Binning '''
+    b_space = 2./float(nbins)
+    all_bins = np.histogram(np.log10(true_periods), bins = np.arange(0, 2., b_space))
+    success_bins = np.histogram(np.log10(success_period), bins = np.arange(0, 2., b_space))
+    all_taus = np.histogram(np.log10(taus), bins = np.arange(0, 1., 1./float(nbins)))
+    tau_bins = np.histogram(np.log10(success_tau), bins = np.arange(0, 1., 1./float(nbins)))
+    all_amps = np.histogram(np.log10(Amps), bins = np.arange(0, np.log10(15), 1./float(nbins)))
+    amp_bins = np.histogram(np.log10(success_amp), bins = np.arange(0, np.log10(15), 1./float(nbins)))
     print 'Truth = ', all_bins[0]
     print 'Successfully measured = ', success_bins[0]
 
-    b_space = 2./float(nbins)
-    p.close(1)
-    p.figure(1)
-    
+    p.close(2)
+    p.figure(2)
+    period_complete = completeness_plots(all_bins, success_bins)
+
+    p.close(3)
+    p.figure(3)
+    tau_complete = completeness_plots(all_taus, tau_bins)
+
+    p.close(4)
+    p.figure(4)
+    amp_complete = completeness_plots(all_amps, amp_bins)
+
+    ''' Plot of completeness for period, tau and amp '''
+    p.close(5)
+    p.figure(5)
+
     p.subplot(3,1,1)
-    p.ylabel('True (number)')
-    step(np.arange(b_space,(2 + b_space), b_space), all_bins[0])
-    #p.xlim(0,2)
-    p.ylim(0, max(all_bins[0])+20)
-    
-    p.subplot(3,1,2)
-    step(np.arange(b_space,(2 + b_space),b_space), success_bins[0])
-    p.ylabel('Success (number)')
-    p.ylim(0, max(success_bins[0])+20)
-    
-    p.subplot(3,1,3)
-    p.ylabel('Completeness')
-    complete = np.zeros(nbins)
+    p.ylabel('Period')
+    complete = np.zeros(len(all_bins[0]))
     for i in range(len(complete)):
                    complete[i] = (float(success_bins[0][i])/float(all_bins[0][i]))*100
     print 'Completeness = ', complete
-    step(np.arange(b_space,(2 + b_space),b_space), complete)
+    step(all_bins[1][1:], complete)
     p.xlabel('Log(Period)')
     p.ylim(0, max(complete)+20)
-    
-    
+
+    p.subplot(3,1,2)
+    p.ylabel('Tau')
+    tau_complete = np.zeros(len(tau_bins[0]))
+    for i in range(len(tau_complete)):
+                   tau_complete[i] = (float(tau_bins[0][i])/float(all_taus[0][i]))*100
+    print 'Completeness = ', tau_complete
+    step(all_taus[1][1:], tau_complete)
+    p.xlabel('Log(Tau)')
+    p.ylim(0, max(tau_complete)+20)
+
+    p.subplot(3,1,3)
+    p.ylabel('Amplitude')
+    amp_complete = np.zeros(len(amp_bins[0]))
+    for i in range(len(amp_complete)):
+                   amp_complete[i] = (float(amp_bins[0][i])/float(all_amps[0][i]))*100
+    print 'Completeness = ', amp_complete
+    step(all_amps[1][1:], amp_complete)
+    p.xlabel('Log(Amplitude)')
+    p.ylim(0, max(amp_complete)+20)
 
     # Reliability - figure out which stars have period measurements. Then compare their real periods
     # with the measured periods. number of stars with detected periods/number of stars with
     # measured periods within 20% of real.
     # Stars with period measurements = list_of_success
     # Their true periods = success_period
-    # Their measured periods...
-    measured_periods = np.zeros(len(list_of_success))
-    uncert = np.zeros(len(list_of_success))
-    median_periods = []
+    # Their measured periods = m_success_period
+    # Their uncertainties = m_success_period_err
 
+    ''' Plots of completeness, reliability and contamination for period '''
+    success_period = np.array(success_period)
+    m_success_period = np.array(m_success_period)
+    m_success_period_err = np.array(m_success_period_err)
+
+    m_bins = np.histogram(np.log10(m_success_period), bins = np.arange(0, 2., b_space))
+    diff = success_period - m_success_period
+    percent = ( diff / success_period )*100
+    reliability = np.where(percent < 10)
+    print 'Reliability = ', len(reliability[0])
+    contamination = np.where(percent > 10)
+    print 'Contamination = ', len(contamination[0])
     
-
-    all_KIDs = np.ndarray((len(list_of_success), 12))
-    KID = np.ndarray((len(list_of_success), 12))
-    periods = np.ndarray((len(list_of_success), 12))
-    errors = np.ndarray((len(list_of_success), 12))
-
-    ''' Reading in results (12 quarters for each star) '''
-    for year in range(3,14):
-        data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCssQ%s_output/results.txt' %year).T
-        periods.T[year] = data[1][1:]
-        errors.T[year] = data[6][1:]
-    
-   
-    for i in range(len(periods)):
-        if len(periods[i]) > 0:
-            per, err = weighted_mean(periods[i], errors[i])
-            m_periods.append(per); m_errors.append(err)
-            median_periods.append(np.median(all_periods[i]))
-        else:
-            m_periods.append(0); m_errors.append(0); median_periods.append(0)
-
-
-    # Was its period successfully measured?
-    for i in range(1, 1000):
-        for j in range(len(list_of_success)):
-            if i == list_of_success[j]:
-                success_period.append(true_period) # FIXME: Do I want the true period or the measured period here?
-                 
-    
-    return
-
 #-----------------------------------------------------------------------------------------------------------------
-                 # ''' Load measured period (for now just take quarter 3)'''
-    #              #data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss3_output/results.txt').T
-    #              #measured_periods.append(data[1][1:][kid_x-1])
-    #              #errors.append(data[6][1:][kid_x-1])
-    #              for k in range(3, 14):
-    #                  data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' %k).T
-    #                  measured_periods.append(data[1][1:][kid_x-1])
-    #                  errors.append(data[6][1:][kid_x-1])
-    #              m_periods, m_errors = weighted_mean(measured_periods, errors)
-    # print 'm_periods', m_periods
-
-
-
-
-
-# Plots histograms of true period and measured period (shows interesting offset?!?)
-#-----------------------------------------------------------------------------------------------------------------
-
-def population(nstars):
-
-    # Load measured vs true stats
-    data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt')
-    x = np.isfinite(data[2])
-    period_list = data[2][x]
-
-    print 'Total number of simulated stars = %s' %nstars
-    print 'Total number of measured periods = %s' %len(period_list)
-
-    print 'CALCULATING COMPLETENESS...'
-
-    ''' Bin stars according to period '''
-    nbins = 10
-    #pbins = np.zeros((nbins,1))
-    #bins = np.zeros(nbins)
-    #true_bins = np.zeros(nbins)
-    bins = np.ones(nbins)
-    true_bins = np.ones(nbins)
-    b_space = 2./float(nbins)
-    bdries = []
-    for k in range(1, nbins):
-            bdries.append(k**(b_space*k))
-    bdries.append(100.)
-
-    measured_periods = []
-    true_periods = []
-
-    for i in range(1, nstars):
-        # Load simulation data
-        data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
-        kid_x = data[0]; KIC_no = str(data[1]); Amp = data[2]; nspots = data[3]; ff = data[4]; \
-            amp = data[5]; noise = data[6]; true_period = data[7]; tau = data[8]
-
-        #print 'Star=', kid_x, 'KIC=', KIC_no, 'Amp=', Amp, 'Nspots=', nspots, \
-        #'ff=', ff, 'amp2=', amp, 'noise=', noise, 'tau=', tau
-        
-
-        ''' Load measured period '''
-        m_period = []; m_err = []
-        for j in range(3, 14):
-            data = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' %j).T
-            periods = data[1][1:][i]
-            errors = data[6][1:][i]
-            
-            m_period.append(periods)
-            m_err.append(errors)
-        m_period = np.array(m_period); m_err = np.array(m_err)
-        x = np.where(m_period > 0.)
-        m_period = m_period[x]
-        m_err = m_err[x]
-        #print m_period
-
-        if len(m_period) > 1:
-            period, error = weighted_mean(m_period, m_err)
-
-            # For now just take the quarter 3 value!
-            period = m_period[0]; error = m_err[0]
-            measured_periods.append(period)
-            true_periods.append(true_period)
-            #print 'Measured period = ', period, '+/-',  error
-        
-            for m in range(len(bdries)-1):
-                if bdries[m] < period < bdries[m+1]:
-                    bins[m] += 1
-                if bdries[m] < true_period < bdries[m+1]:
-                    true_bins[m] += 1
-
-            print 'Star = ', kid_x, 'TRUE PERIOD = ', true_period, 'Measured period = ', period
-
-    print bins
-    print true_bins
-    #print (bins/true_bins)*100
-
-    ''' Population study'''
-    p.close(1)
-    p.figure(1)
-    p.subplot(2,1,1)
-    #p.hist(true_periods)
+def completeness_plots(all_bins, success_bins):
+    
+    ''' Plots of true, measured and completeness '''    
+    p.subplot(3,1,1)
     p.ylabel('True (number)')
-    step(np.log10(bdries), true_bins)
-    p.ylim(0, max(true_bins)+1)
-    p.subplot(2,1,2)
-    #p.hist(measured_periods)#, np.log10(bdries))
-    step(np.log10(bdries), bins)
-    p.ylabel('Measured (number)')
-    p.ylim(0, max(bins)+1)
-    #p.subplot(3,1,3)
-    #step(np.log10(bdries), (bins/true_bins)*100)
-    #p.ylabel('Completeness (%)')
-    p.xlabel('Log(Period)')
-    #p.ylim(0, max((bins/true_bins)*100 + 10))
-
+    step(all_bins[1][1:], all_bins[0])
+    p.ylim(0, max(all_bins[0])+20)
     
+    p.subplot(3,1,2)
+    step(success_bins[1][1:], success_bins[0])
+    p.ylabel('Success (number)')
+    p.ylim(0, max(success_bins[0])+20)
+    
+    p.subplot(3,1,3)
+    p.ylabel('Completeness')
+    complete = np.zeros(len(all_bins[0]))
+    for i in range(len(complete)):
+                   complete[i] = (float(success_bins[0][i])/float(all_bins[0][i]))*100
+    print 'Completeness = ', complete
+    step(all_bins[1][1:], complete)
+    p.xlabel('Log(Period)')
+    p.ylim(0, max(complete)+20)
 
-    return
+    return complete
 
-#-----------------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------
 def weighted_mean(all_periods, all_errors):
     #for i in range(len(all_errors)):
@@ -604,8 +533,6 @@ def weighted_mean(all_periods, all_errors):
     return period, error
 
 #-----------------------------------------------------------------------------------------------------------------
-
-
 def random_test():
     rand_periods = np.zeros(1000)
     periods = np.zeros(1000)
@@ -618,7 +545,6 @@ def random_test():
         data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/tests/sim_period%s.txt' %(i+1))
         true_periods[i] = data
 
-
     p.close(4)
     p.figure(4)
     p.subplot(3,1,1)
@@ -627,13 +553,8 @@ def random_test():
     p.plot(periods, 'k.')
     p.subplot(3,1,3)
     p.plot(np.log10(true_periods) ,'k.')
-    # p.plot(range(100,200), np.log10(true_periods), 'k.')
-    # p.plot(range(200,300), np.log10(true_periods), 'k.')
-    # p.plot(range(300,400), np.log10(true_periods), 'k.')
-    # p.plot(range(400,500), np.log10(true_periods), 'k.')
 
     ''' Plotting as close to original periods as I can'''
-
     p.close(10)
     p.figure(10)
     p.subplot(1,2,1)
@@ -645,7 +566,3 @@ def random_test():
     for i in range(100):
         data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
         p.axhline(np.log10(data[7]), color = 'k')
-    
-   
-    return
-    
