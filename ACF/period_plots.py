@@ -1,6 +1,6 @@
 # This script takes the Periods.txt files from various directories and compiles lists of targets and various measurements of period. It then makes a plot for each star with all the measurements of period. It also tells you whether you have made a reliable period measurement for each star. Additional - It will plot either all_data, individual quarters or yearly data. 
 
-import numpy
+import numpy as np
 import scipy
 import pylab
 import atpy
@@ -9,28 +9,30 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
 
     final_KID_list = []
     ''' importing file of all KIDs'''
-    all_targs = numpy.genfromtxt('/Users/angusr/Documents/rotation/all_targets.txt').T
+    all_targs = np.genfromtxt('/Users/angusr/Documents/rotation/all_targets.txt').T
 
     ''' Extracting data from text files.'''
-    data3 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ3_output/Periods3.txt')
-    data4 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ4_output/Periods4.txt')    
-    data5 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ5_output/Periods5.txt')
-    data6 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ6_output/Periods6.txt')
-    data7 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ7_output/Periods7.txt')
-    data8 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ8_output/Periods8.txt')
-    data9 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ9_output/Periods9.txt')
-    data10 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ10_output/Periods10.txt')
-    data11 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ11_output/Periods11.txt')
-    data12 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ12_output/Periods12.txt')
-    data13 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ13_output/Periods13.txt')
-    data14 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ14_output/Periods14.txt')
-    data_q04 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ0-4_output/Periods0-4.txt')
-    data_q25 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ2-5_output/Periods2-5.txt')
-    data_q59 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ5-9_output/Periods5-9.txt')
-    data_q36 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ3-6_output/Periods3-6.txt')
-    data_q710 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ7-10_output/Periods7-10.txt')
-    data_q1114 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ11-14_output/Periods11-14.txt')
-    data_q09 = numpy.genfromtxt('/Users/angusr/angusr/ACF/PDCQ0-9_output/Periods0-9.txt')
+    data3 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ3_output/Periods3.txt')
+    data4 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ4_output/Periods4.txt')    
+    data5 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ5_output/Periods5.txt')
+    data6 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ6_output/Periods6.txt')
+    data7 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ7_output/Periods7.txt')
+    data8 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ8_output/Periods8.txt')
+    data9 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ9_output/Periods9.txt')
+    data10 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ10_output/Periods10.txt')
+    data11 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ11_output/Periods11.txt')
+    data12 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ12_output/Periods12.txt')
+    data13 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ13_output/Periods13.txt')
+    data14 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ14_output/Periods14.txt')
+    data15 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ15_output/Periods14.txt')
+    data16 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ16_output/Periods14.txt')
+    data_q04 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ0-4_output/Periods0-4.txt')
+    data_q25 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ2-5_output/Periods2-5.txt')
+    data_q59 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ5-9_output/Periods5-9.txt')
+    data_q36 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ3-6_output/Periods3-6.txt')
+    data_q710 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ7-10_output/Periods7-10.txt')
+    data_q1114 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ11-14_output/Periods11-14.txt')
+    data_q09 = np.genfromtxt('/Users/angusr/angusr/ACF/PDCQ0-9_output/Periods0-9.txt')
 
 
     KIDq04 = data_q04[0]
@@ -113,6 +115,19 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
     errors14 = data14[2]
     sine14 = data14[3]
 
+    
+    KID15 = data15[0]
+    periods15 = data15[1]
+    errors15 = data15[2]
+    sine15 = data15[3]
+
+
+    KID16 = data16[0]
+    periods16 = data16[1]
+    errors16 = data16[2]
+    sine16 = data16[3]
+
+
     KIDq25 = data_q25[0]
     periodsq25 = data_q25[1]
     errorsq25 = data_q25[2]
@@ -141,6 +156,8 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
     print 'Found %d Targets in quarter 12' %len(KID12)
     print 'Found %d Targets in quarter 13' %len(KID13)
     print 'Found %d Targets in quarter 14' %len(KID14)
+    print 'Found %d Targets in quarter 15' %len(KID14)
+    print 'Found %d Targets in quarter 16' %len(KID14)
     print 'Found %d Targets in quarters 0-4' %len(KIDq04)
     print 'Found %d Targets in quarters 2-5' %len(KIDq25)
     print 'Found %d Targets in quarters 5-9' %len(KIDq59)
@@ -150,25 +167,25 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
     print 'Found %d Targets in quarters 0-9' %len(KIDq09)
 
     if all_data == True:
-        KID_method = [KID3, KID4, KID5, KID6, KID7, KID8, KID9, KID10, KID11, KID12, KID13, KID14, KIDq04, KIDq25, KIDq59, KIDq36, KIDq710, KIDq1114, KIDq09]
-        period_method = [periods3, periods4, periods5, periods6, periods7, periods8, periods9, periods10, periods11, periods12, periods13, periods14, periodsq04, periodsq25, periodsq59, periodsq36, periodsq710, periodsq1114, periodsq09]
-        error_method = [errors3, errors4, errors5, errors6, errors7, errors8, errors9 , errors10, errors11, errors12, errors13, errors14, errorsq04, errorsq25, errorsq59, errorsq36, errorsq710, errorsq1114, errorsq09]
-        sine_method = [sine3, sine4, sine5, sine6, sine7, sine8, sine9, sine10, sine11, sine12, sine13, sine14, sineq04, sineq25, sineq59, sineq36, sineq710, sineq1114, sineq09]  
-        KID_meth_string = ['Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 'Qs 1-4', 'Qs 2-5', 'Qs 5-9', 'Qs 3-6', 'Qs 7-10', 'Qs 11-14', 'Qs 1-8']
-        xtick_values = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
-        xtick_labels = ['3','4','5','6','7','8','9','10','11','12','13','14','1-4','2-5', '3-6', '5-9','7-10','11-14','1-8']
+        KID_method = [KID3, KID4, KID5, KID6, KID7, KID8, KID9, KID10, KID11, KID12, KID13, KID14, KID15, KID16, KIDq04, KIDq25, KIDq59, KIDq36, KIDq710, KIDq1114, KIDq09]
+        period_method = [periods3, periods4, periods5, periods6, periods7, periods8, periods9, periods10, periods11, periods12, periods13, periods14, periods15, periods16, periodsq04, periodsq25, periodsq59, periodsq36, periodsq710, periodsq1114, periodsq09]
+        error_method = [errors3, errors4, errors5, errors6, errors7, errors8, errors9 , errors10, errors11, errors12, errors13, errors14, errors15, errors16, errorsq04, errorsq25, errorsq59, errorsq36, errorsq710, errorsq1114, errorsq09]
+        sine_method = [sine3, sine4, sine5, sine6, sine7, sine8, sine9, sine10, sine11, sine12, sine13, sine14, sine15, sine16, sineq04, sineq25, sineq59, sineq36, sineq710, sineq1114, sineq09]  
+        KID_meth_string = ['Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16', 'Qs 1-4', 'Qs 2-5', 'Qs 5-9', 'Qs 3-6', 'Qs 7-10', 'Qs 11-14', 'Qs 1-8']
+        xtick_values = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21]
+        xtick_labels = ['3','4','5','6','7','8','9','10','11','12','13','14', '15', '16','1-4','2-5', '3-6', '5-9','7-10','11-14','1-8']
         fig_dir = 'all_data_figs'
 
 
         
     elif ind_quarters == True:
-        KID_method = [KID3, KID4, KID5, KID6, KID7, KID8, KID9, KID10, KID11, KID12, KID13, KID14]
-        period_method = [periods3, periods4, periods5, periods6, periods7, periods8, periods9, periods10, periods11, periods12, periods13, periods14]
-        error_method = [errors3, errors4, errors5, errors6, errors7, errors8, errors9 , errors10, errors11, errors12, errors13, errors14]
-        sine_method = [sine3, sine4, sine5, sine6, sine7, sine8, sine9, sine10, sine11, sine12, sine13, sine14]  
-        KID_meth_string = ['Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14']
-        xtick_values = [1,2,3,4,5,6,7,8,9,10,11,12]
-        xtick_labels = ['3','4','5','6','7','8','9','10','11','12','13','14']
+        KID_method = [KID3, KID4, KID5, KID6, KID7, KID8, KID9, KID10, KID11, KID12, KID13, KID14, KID15, KID16]
+        period_method = [periods3, periods4, periods5, periods6, periods7, periods8, periods9, periods10, periods11, periods12, periods13, periods14, periods15, periods16]
+        error_method = [errors3, errors4, errors5, errors6, errors7, errors8, errors9 , errors10, errors11, errors12, errors13, errors14, errors15, errors16]
+        sine_method = [sine3, sine4, sine5, sine6, sine7, sine8, sine9, sine10, sine11, sine12, sine13, sine14, sine15, sine16]  
+        KID_meth_string = ['Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16']
+        xtick_values = [1,2,3,4,5,6,7,8,9,10,11,12, 13, 14]
+        xtick_labels = ['3','4','5','6','7','8','9','10','11','12','13','14', '15', '16']
         fig_dir = 'ind_qs_figs'
 
 
@@ -203,20 +220,20 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
 
         
         ''' Find medians '''
-        acf_median = numpy.median(periods)
-        sine_median = numpy.median(sines)
+        acf_median = np.median(periods)
+        sine_median = np.median(sines)
 
         '''Find rms about median'''
-        acf_rms = numpy.sqrt((sum((periods - acf_median)**2))/numpy.float(len(periods)))
+        acf_rms = np.sqrt((sum((periods - acf_median)**2))/np.float(len(periods)))
         '''print acf_rms'''
-        sine_rms = numpy.sqrt((sum((sines - sine_median)**2))/numpy.float(len(sines)))
+        sine_rms = np.sqrt((sum((sines - sine_median)**2))/np.float(len(sines)))
         '''print sine_rms'''
         diff = sine_median - acf_median
 
         
         '''PLOTTING'''
         KID1s = range(1,len(KID_method)+1)
-        fake_errors = numpy.zeros(len(KID_method))
+        fake_errors = np.zeros(len(KID_method))
         pylab.figure(1)
         pylab.clf()
 
@@ -255,8 +272,8 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
         #if 0<acf_median<1000:
             #pylab.text(10.1, acf_median, 'ACF', color = 'b')
             
-        KID_string = numpy.int(i)
-        KID_string = numpy.str(KID_string)
+        KID_string = np.int(i)
+        KID_string = np.str(KID_string)
         pylab.title('%s' %KID_string)
         
         '''Making sure that all measurements lie within 15% of the harmonic lines'''
@@ -328,7 +345,7 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
         txt_tit = 'years'
     elif all_data == True:
         txt_tit = 'all_data'
-    numpy.savetxt('/Users/angusr/Desktop/%s.txt' %txt_tit, final_KID_list)
+    np.savetxt('/Users/angusr/Desktop/%s.txt' %txt_tit, final_KID_list)
     return
 
 
@@ -339,10 +356,10 @@ def find_periods(KID, list_of_KID_methods, list_of_period_methods, list_of_error
     error_method = list_of_error_methods
     sine_method = list_of_sine_methods
 
-    KIDs = numpy.zeros(len(KID_method))
-    periods = numpy.zeros(len(KID_method))
-    errors = numpy.zeros(len(KID_method))
-    sines = numpy.zeros(len(KID_method))
+    KIDs = np.zeros(len(KID_method))
+    periods = np.zeros(len(KID_method))
+    errors = np.zeros(len(KID_method))
+    sines = np.zeros(len(KID_method))
     n = 0; m = 0
     for KID_list in KID_method:
         for star in range(0,len(KID_list)):

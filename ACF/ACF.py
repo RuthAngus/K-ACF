@@ -11,14 +11,6 @@ import glob
 from sets import Set
 import collections
 
-#if rpy not available, comment out this..
-# from rpy2 import robjects as ro
-# r = ro.r
-# import rpy2.robjects.numpy2ri
-# rpy2.robjects.numpy2ri.activate()
-# and set no_rpy to True...
-no_rpy = True
-
 from scipy import signal
 import KOI_tools_b12 as kt
 import filter
@@ -1125,5 +1117,5 @@ def extrema(x, max = True, min = True, strict = False, withend = False):
 
 
 
-for quarter in range(3, 17):
-    corr_run(quarter)
+#for q in range(3, 17):
+#    corr_run(q)
