@@ -17,10 +17,23 @@ import glob
 import ACF_star_spot
 import ss_period_plots
 import ss_index
-import pylab as p
+import pylab as pl
 import scipy.io
 import pyfits
 from matplotlib.pyplot import step
+import scipy.optimize as optimization
+
+from matplotlib import rc
+rc("font", size=50, family="serif", serif="Computer Sans")
+rc("text", usetex=True)
+
+plotpar = {'axes.labelsize': 16,
+           'text.fontsize': 25,
+           'legend.fontsize': 14,
+           'xtick.labelsize': 17,
+           'ytick.labelsize': 17, 
+           'text.usetex': True}
+pl.rcParams.update(plotpar)
 
 #======================================================
 def run_master():                                      ##
@@ -328,58 +341,185 @@ def compare(nstars):
             data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/sim_period%s.txt' %(j+1))
             test_periods[n] = data[4]
             n += 1
-        
 
-    p.close(1)
-    p.figure(1)
+    cols = ['#FF9933', '#339999']
+    m_periods = np.array(m_periods)
+    true_periods = np.array(true_periods)
+    m_errors = np.array(m_errors)
+    a = m_periods > 0
+
+    # Main compare plot
+    pl.close(1)
+    pl.figure(1)
+    ax1 = pl.subplot2grid((4,4), (0,0), colspan=4, rowspan = 3)
     x = np.arange(0,40,0.1)
-    p.plot(x, 1.05*x, 'r--')
-    p.plot(x, 0.95*x, 'r--')
-    p.plot(x, x, 'b--')
-    p.plot(.5*x, x, 'b--')
-    p.plot(.333333*x, x, 'b--')
-    p.plot(2*x, x, 'b--')
-    p.plot(3*x, x, 'b--')
-    p.plot(true_periods, m_periods, 'k.')
-    # p.plot(true_periods, median_periods, 'r.')
-    # p.errorbar(true_periods, m_periods, yerr = errors, fmt = 'k.')
-    p.xlabel('True Period (days)')
-    p.ylabel('Measured Period (days)')
-    # p.xlim(min(periods) - 0.5, max(periods) + 0.5)
-    # p.ylim(min(true_periods) - 1.5, max(true_periods) + 1.5)
-    p.xlim(0, 40)
-    p.ylim(0, 40)
-    p.title('Measured vs true period')
-    p.savefig('/Users/angusr/angusr/ACF/star_spot_sim/resultstest')
-    p.savefig('Compare')
+    pl.plot(x, 1.05*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.95*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.plot(.5*x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.4*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.6*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(2*x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.errorbar(true_periods[a], m_periods[a], yerr = m_errors[a], \
+                fmt = 'k.', markersize = 2, capsize = 0, ecolor = '0.7' )
+    pl.ylabel('$\mathrm{Recovered~period~(days)}$', fontsize = 25)
+    pl.xlim(0, 25)
+    pl.ylim(0, 25)
+    pl.gca().set_xticklabels([])
+    
+   
     star_list = np.array(star_list)
     true_periods = np.array(true_periods)
     period_list = np.array(period_list)
     np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt', \
                   np.transpose((star_list, true_periods, m_periods, m_errors)))
 
-    '''Testing randomness'''
-    # p.close(3)
-    # p.figure(3)
-    # p.subplot(1,2,1)
-    # p.plot(np.log10(true_periods), 'k.')
-    # p.subplot(1,2,2)
-    # p.plot(np.log10(test_periods), 'k.')
+    # Removing trend - need to figure out how to find the uncertainty
+    print 'removing trend'
+   
+    # Find outliers
+    mask = np.zeros(len(true_periods[a]))
+    for i in range(len(true_periods[a])):
+        if 17 < true_periods[a][i] < 22 and 6 < m_periods[a][i] < 10:
+            mask[i] = np.nan
+    mask = np.isfinite(mask)
 
-    return period_list
+    # a removes the zeros and mask removes the outliers
+
+    m_errors = np.array(m_errors)
+    x = true_periods[a][mask]
+    y = m_periods[a][mask]
+    # sigma = m_errors[a][mask]
+    # x0 = [0.9, 0.23] # Initial guess
+    # p0, cov = optimization.curve_fit(func, x, y, x0, sigma)
+
+    # p0 = scipy.polyfit(true_periods[a][mask], m_periods[a][mask], 2)
+    # print p0
+    # p = scipy.poly1d(p0)
+    # xx = true_periods
+    # yy = p(xx)
+    # zz = xx-yy
+    p0 = scipy.polyfit(true_periods[a][mask], (m_periods[a][mask] - true_periods[a][mask]), 1)
+    print p0
+    p = scipy.poly1d(p0)
+    xx = true_periods
+    dy = p(xx)
+    yy = m_periods
+    zz = yy - dy
+    
+    ax2 = pl.subplot2grid((4,4), (3, 0), colspan = 4)
+
+    er = np.sqrt(m_errors[a][mask]**2 + m_errors[a][mask]**2) # FIXME - propagate errs properly!
+    pl.errorbar(true_periods[a][mask], (-true_periods[a][mask] + m_periods[a][mask]), yerr = m_errors[a][mask], \
+                fmt = 'k.', ecolor = '0.7', markersize = 2, capsize = 0)
+    pl.subplots_adjust(top=0.96, bottom = 0.06)
+    pl.xlabel('$\mathrm{Injected~period~(days)}$', fontsize = 25)
+    pl.ylabel('$\mathrm{Residuals}$', fontsize = 25)
+    pl.xlim(0, 25)
+    pl.ylim(-5,2)
+    pl.subplots_adjust(hspace = 0., bottom = 0.1)
+    pl.yticks(range(-5, 2), range(-5, 2))
+    pl.savefig('/Users/angusr/angusr/ACF/star_spot_sim/resultstest')
+    pl.savefig('Compare')
+    pl.show()
+
+    pl.close(2)
+    pl.figure(2)
+    x = np.arange(0,40,0.1)
+    pl.plot(x, 1.05*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.95*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.plot(.5*x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.6*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(x, 0.4*x, color = cols[0], linestyle = '--')#, linewidth = 2)
+    pl.plot(2*x, x, color = cols[1], linestyle = '--')#, linewidth = 2)
+    pl.errorbar(true_periods[a], (zz[a]), yerr = m_errors[a],                fmt = 'k.', ecolor = '0.7', markersize = 2, capsize = 0)
+    b = m_periods == 0
+    # pl.errorbar(true_periods[b], m_periods[b], yerr = m_errors[b], fmt = 'k.', ecolor = '0.7',\
+                # markersize = 2, capsize = 0)
+    pl.ylabel('Recovered Period (days)', fontsize = 25)
+    pl.xlabel('Injected Period (days)', fontsize = 25)
+    pl.xlim(0, 25)
+    pl.ylim(0, 25)
+    pl.savefig('trend_removed')
+    pl.show()
+   
+    
+    # pl.close(2)
+    # pl.figure(2)
+    # pl.subplot(2,1,1)
+    
+    # x = np.arange(0,40,0.1)
+    # pl.plot(x, 1.2*x, 'r--')
+    # pl.plot(x, 0.8*x, 'r--')
+    # pl.plot(x, x, 'b--')
+    # pl.plot(.5*x, x, 'b--')
+    # pl.plot(xx, yy, 'c-')
+    # pl.plot(.333333*x, x, 'b--')
+    # pl.plot(2*x, x, 'b--')
+    # pl.plot(3*x, x, 'b--')
+    # pl.errorbar(true_periods, m_periods, yerr = m_errors, fmt = 'k.', capsize = 0, ecolor = '0.7')
+    # pl.xlabel('True Period (days)')
+    # pl.ylabel('Measured Period (days)')
+    # pl.xlim(0, 40)
+    # pl.ylim(0, 40)
+    
+    # m_errors = np.array(m_errors)
+    # pl.subplot(2,1,2)
+    # x = np.arange(0,40,0.1)
+    # pl.plot(x, 1.2*x, 'r--')
+    # pl.plot(x, 0.8*x, 'r--')
+    # pl.plot(x, x, 'b--')
+    # pl.plot(.5*x, x, 'b--')
+    # pl.plot(.333333*x, x, 'b--')
+    # pl.plot(2*x, x, 'b--')
+    # pl.plot(3*x, x, 'b--')
+    # pl.errorbar(true_periods[a][mask], m_periods[a][mask]+zz, yerr = m_errors[a][mask], fmt = 'k.',\
+    #             capsize = 0, ecolor = '0.7')
+    # #pl.plot(xx, zz, 'y-')
+    # pl.xlabel('True Period (days)')
+    # pl.ylabel('Measured Period (days)')
+    # pl.xlim(0, 40)
+    # pl.ylim(0, 40)
+    # pl.show()
+
+    return period_list, p0
+
+def func(x, m, c):
+        return m*x + c
 #-----------------------------------------------------------------------------------------------------------------    
 # This function calculates the completeness: percentage of sample with successful period measurement,
 # the reliability: fraction of objects with a given true period, detected within < 20 per cent of this value,
 # the contamination: fraction of objects with measured period > 20 per cent different to the true period.
 #-----------------------------------------------------------------------------------------------------------------
 
-def completeness():
+def completeness(p0):
 
     # Load measured vs true stats
     data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true.txt').T
     list_of_success = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/ss_ind_quarterstest.txt')
     star_list = data[0]; m_periods = data[2]; true_periods = data[1]; m_err = data[3]
+
+    # pl.close(11)
+    # pl.figure(11)
+    # pl.subplot(2,1,1)
+    # a = m_periods > 0
+    # pl.plot(true_periods[a], m_periods[a], 'k.')
+    # x = np.arange(0, 25, 0.1)
+    # pl.plot(x, x, 'b--')
     
+    # p0 = [0.90017874,  0.22840842]
+    p = scipy.poly1d(p0)
+    dy = p(true_periods)
+    m_periods -= dy
+
+
+    
+    # pl.subplot(2,1,2)
+    # pl.plot(true_periods[a], m_periods[a], 'k.')
+    # pl.plot(x, x, 'b--')
+    # pl.show()
+    # raw_input('enter')
     print 'Total number of simulated stars = %s' %len(star_list)
     print 'Total number of measured periods = %s' %len(list_of_success)
     print 'CALCULATING COMPLETENESS...'
@@ -424,43 +564,44 @@ def completeness():
     print 'Truth = ', all_bins[0]
     print 'Successfully measured = ', success_bins[0]
 
-    p.close(2)
-    p.figure(2)
+    # pl.close(2)
+    # pl.figure(2)
     period_complete = completeness_plots(all_bins, success_bins)
-    p.savefig('period_completeness')
+    # pl.savefig('period_completeness')
 
-    p.close(3)
-    p.figure(3)
-    tau_complete = completeness_plots(all_taus, tau_bins)
-    p.savefig('tau_completeness')
+    # pl.close(3)
+    # pl.figure(3)
+    # tau_complete = completeness_plots(all_taus, tau_bins)
+    # pl.savefig('tau_completeness')
 
-    p.close(4)
-    p.figure(4)
-    amp_complete = completeness_plots(all_amps, amp_bins)
-    p.savefig('amp_completeness')
+    # pl.close(4)
+    # pl.figure(4)
+    # amp_complete = completeness_plots(all_amps, amp_bins)
+    # pl.savefig('amp_completeness')
 
-    ''' Plot of completeness for period, tau and amp '''
-    p.close(5)
-    p.figure(5)
+    # ''' Plot of completeness for period, tau and amp '''
+    # pl.close(5)
+    # pl.figure(5)
+    col = '#339999'
+    
+    # pl.subplot(3,1,1)
+    # pl.ylabel('Completeness')
+    # step(all_bins[1][1:], period_complete, color = col)
+    # pl.xlabel('Log(Period)')
+    # pl.ylim(0, max(period_complete)+20)
 
-    p.subplot(3,1,1)
-    p.ylabel('Completeness')
-    step(all_bins[1][1:], period_complete)
-    p.xlabel('Log(Period)')
-    p.ylim(0, max(period_complete)+20)
+    # pl.subplot(3,1,2)
+    # pl.ylabel('Completeness')
+    # step(all_taus[1][1:], tau_complete, color = col)
+    # pl.xlabel('Log(Tau)')
+    # pl.ylim(0, max(tau_complete)+20)
 
-    p.subplot(3,1,2)
-    p.ylabel('Completeness')
-    step(all_taus[1][1:], tau_complete)
-    p.xlabel('Log(Tau)')
-    p.ylim(0, max(tau_complete)+20)
-
-    p.subplot(3,1,3)
-    p.ylabel('Completeness')
-    step(all_amps[1][1:], amp_complete)
-    p.xlabel('Log(Amplitude)')
-    p.ylim(0, max(amp_complete)+20)
-    p.savefig('completeness_summary')
+    # pl.subplot(3,1,3)
+    # pl.ylabel('Completeness')
+    # step(all_amps[1][1:], amp_complete, color = col)
+    # pl.xlabel('Log(Amplitude)')
+    # pl.ylim(0, max(amp_complete)+20)
+    # pl.savefig('completeness_summary')
 
     # Reliability - figure out which stars have period measurements. Then compare their real periods
     # with the measured periods. number of stars with detected periods/number of stars with
@@ -492,32 +633,40 @@ def completeness():
             reliability[i] = 0.
             contamination[i] = 0.
     
-    p.close(6)
-    p.figure(6)
-    p.subplot(3,1,1)
-    step(np.arange(0, (2.-2./nbins), 2./nbins), period_complete)
-    p.ylabel('Completeness')
-    p.ylim(0, 120)
-    p.subplot(3,1,2)
-    step(np.arange(0, 2., 2./nbins), reliability)
-    p.ylabel('Reliability')
-    p.ylim(0, 120)
-    p.subplot(3,1,3)
-    step(np.arange(0, 2., 2./nbins), contamination)
-    p.ylabel('Contamination')
-    p.xlabel('Log(Period)')
-    p.ylim(0, 120)
-    p.savefig('Completeness')
+    pl.close(6)
+    pl.figure(6)
+    pl.subplot(3,1,1)
+    step(np.arange(0, (2.-2./nbins), 2./nbins), period_complete, color = col)
+    pl.ylabel('$\mathrm{Completeness}$', fontsize = 20)
+    pl.subplots_adjust(hspace = 0)
+    pl.gca().set_xticklabels([])
+    pl.ylim(0, 110)
+    pl.xlim(0, 1.5)
+    pl.subplot(3,1,2)
+    step(np.arange(0, 2., 2./nbins), reliability, color = col)
+    pl.ylabel('$\mathrm{Reliability}$', fontsize = 20)
+    pl.gca().set_xticklabels([])
+    pl.ylim(0, 110)
+    pl.xlim(0, 1.5)
+    pl.subplot(3,1,3)
+    step(np.arange(0, 2., 2./nbins), contamination, color = col)
+    pl.ylabel('$\mathrm{Contamination}$', fontsize = 20)
+    pl.xlabel('$\log \,\mathrm{Period}~(\mathrm{days})$', fontsize = 20)
+    pl.ylim(0, 110)
+    pl.xlim(0, 1.5)
+    pl.savefig('Completeness')
+    pl.show()
     
 #-----------------------------------------------------------------------------------------------------------------
 def comp_rel_cont(t_success_period, m_success_period):
-    diff = t_success_period - m_success_period
+    limit = 3
+    diff = abs(t_success_period - m_success_period)
     percent = ( diff / t_success_period )*100
-    x1 = np.where(percent < 5)
-    reliability = ( float(len(x1[0])) / float(len(t_success_period)) )*100
-    # print 'Reliability = ', reliability
-    x2 = np.where(percent > 5)
-    contamination = ( float(len(x2[0])) / float(len(t_success_period)) )*100
+    x1 = np.where(percent < limit)[0]
+    reliability = ( float(len(x1)) / float(len(t_success_period)) )*100
+    print 'Reliability = ', reliability
+    x2 = np.where(percent > limit)[0]
+    contamination = ( float(len(x2)) / float(len(t_success_period)) )*100
     # print 'Contamination = ', contamination
     
     return reliability, contamination
@@ -526,48 +675,50 @@ def comp_rel_cont(t_success_period, m_success_period):
 def completeness_plots(all_bins, success_bins):
     
     ''' Plots of true, measured and completeness '''    
-    p.subplot(3,1,1)
-    p.ylabel('True (number)')
+    pl.subplot(3,1,1)
+    pl.ylabel('True (number)')
     step(all_bins[1][1:], all_bins[0])
-    p.ylim(0, max(all_bins[0])+20)
+    pl.ylim(0, max(all_bins[0])+20)
     
-    p.subplot(3,1,2)
+    pl.subplot(3,1,2)
     step(success_bins[1][1:], success_bins[0])
-    p.ylabel('Success (number)')
-    p.ylim(0, max(success_bins[0])+20)
+    pl.ylabel('Success (number)')
+    pl.ylim(0, max(success_bins[0])+20)
     
-    p.subplot(3,1,3)
-    p.ylabel('Completeness')
+    pl.subplot(3,1,3)
+    pl.ylabel('Completeness')
     complete = np.zeros(len(all_bins[0]))
     for i in range(len(complete)):
                    complete[i] = (float(success_bins[0][i])/float(all_bins[0][i]))*100
     print 'Completeness = ', complete
     step(all_bins[1][1:], complete)
-    p.xlabel('Log(Period)')
-    p.ylim(0, max(complete)+20)
-    # p.savefig('Completeness')
+    pl.xlabel('Log(Period)')
+    pl.ylim(0, max(complete)+20)
+    # pl.savefig('Completeness')
 
     return complete
 #-----------------------------------------------------------------------------------------------------------------
 
     
 #-----------------------------------------------------------------------------------------------------------------
-def weighted_mean(all_periods, all_errors):
-    #for i in range(len(all_errors)):
-    #    if all_errors[i] == 0.0:
-    #        all_errors[i] = 0.01
-    errors = []
-    for i in range(len(all_errors)):
-        errors.append(1.0/((all_errors[i])**2))
-    weights = errors
-    weights = weights/sum(weights) # Normalise
-    period = np.average(all_periods, weights = weights) # Find weighted mean
-    for i in range(len(all_errors)):
-        all_errors[i] = all_errors[i]**2 # Add errors in quadrature
-    err_sum = sum(all_errors)
-    error = np.sqrt(err_sum)
+def weighted_mean(periods, errors):
+    # remove zeros 
+    x = periods > 0
+    periods = periods[x]
+    errors = errors[x]
+    x = errors > 0
+    periods = periods[x]
+    errors = errors[x]
+    
+    if len(errors) > 0:
+        weights = 1./errors**2
+        weights /= sum(weights) # Normalise
+        period = np.average(periods, weights = weights) # Find weighted mean
+        err = np.sqrt(sum(errors**2))/len(errors)
 
-    return period, error
+        return period, err
+    else:
+        return 0., 0.
 
 #-----------------------------------------------------------------------------------------------------------------
 def random_test():
@@ -603,3 +754,7 @@ def random_test():
     for i in range(100):
         data = np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1)).T
         p.axhline(np.log10(data[7]), color = 'k')
+
+
+period_list, p0 = compare(1000) 
+completeness(p0)

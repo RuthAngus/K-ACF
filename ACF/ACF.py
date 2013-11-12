@@ -11,11 +11,20 @@ import glob
 from sets import Set
 import collections
 
+
 from scipy import signal
 import KOI_tools_b12 as kt
 import filter
 import gls
 import mpfit
+
+#if rpy not available, comment out this..
+# from rpy2 import robjects as ro
+# r = ro.r
+# import rpy2.robjects.numpy2ri
+# rpy2.robjects.numpy2ri.activate()
+# and set no_rpy to True...
+no_rpy = True
 
 
 dir = '/Users/angusr/angusr/ACF'
@@ -884,7 +893,7 @@ def plot_stats(quarter_stats, time, flux, kid_x, acf_per_pos_in, acf_per_height_
         ymax = 0.99*max(locheight)
     pylab.plot(pk1, locheight[acf_per_pos == pk1][0], 'ro')
     pylab.ylabel('Local Height')
-    
+
     if len(acf_per_pos) > 2 and no_rpy == False:
         print 'Fitting line to Local Height...'
         st_line = lambda p, x: p[0] + p[1] * x
