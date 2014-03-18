@@ -39,7 +39,7 @@ def load_data(lc_file):
     n = np.isfinite(x)*np.isfinite(y)*np.isfinite(yerr)*(q==0)
     return x[n], y[n], yerr[n]
 
-def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
+def corr_run(time, flux, flux_err, id_list, lc_file, q, tr_out = False, tr_type = None):
 
     # Create empty arrays
     acf_peak_per = scipy.ones(len(id_list)) * -9999.0
@@ -61,10 +61,10 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
     period = scipy.ones(len(id_list)) * -9999.0
 
     # load data
-    time, flux, flux_err = load_data(lc_file)
+#     time, flux, flux_err = load_data(lc_file)
     pl.clf()
     pl.plot(time, flux, 'k.')
-    pl.savefig('data')
+    pl.savefig('%s/data%s'%(dir, q))
 
     mdn = np.median(flux)
     flux = flux-mdn
@@ -154,7 +154,7 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
     pylab.axhline(0.3, c = 'g', ls = '--')
     pylab.xlim(0, pgram_tab.period.max())
     pylab.ylabel('Periodogram')
-    pylab.savefig('%s/%s%s_pgram' %(dir, q, kid))
+#     pylab.savefig('%s/%s%s_pgram' %(dir, q, kid))
 
     pylab.figure(12)
     pylab.clf()
@@ -172,24 +172,27 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
                        acf_per_height, acf_per_err, locheight, asym)
 
         n_s = 'k'
-        if max(acf_per_height[:2]) > 0:
-            if med_dlag_per[x] >0: period[x] = med_dlag_per[x] #########################
-            else: period[x] = acf_peak_per[x]
-        else:
-            print '!!!!!! PEAK HEIGHT < 0 !!!!!!'
-            n_s = 'r'
-            #period[x] = -9999.0
-            # period[x] = 0.0
-        if one_peak_only == 1:
-            print '!!!!!! ONLY ONE PEAK FOUND < 0.1 !!!!!!'
-            #period[x] = -9999.0
-            n_s = 'g'
-            # period[x] = 0.0
-        if lh1[x] < 0.1:
-            print '!!!!!! LOCAL PEAK HEIGHT < 0.1 !!!!!!'
-            #period[x] = -9999.0
-            n_s = 'b'
-            # period[x] = 0.0
+
+        period[x] = acf_peak_per[x]
+
+#         if max(acf_per_height[:2]) > 0:
+#             if med_dlag_per[x] >0: period[x] = med_dlag_per[x] #########################
+#             else: period[x] = acf_peak_per[x]
+#         else:
+#             print '!!!!!! PEAK HEIGHT < 0 !!!!!!'
+#             n_s = 'r'
+#             #period[x] = -9999.0
+#             # period[x] = 0.0
+#         if one_peak_only == 1:
+#             print '!!!!!! ONLY ONE PEAK FOUND < 0.1 !!!!!!'
+#             #period[x] = -9999.0
+#             n_s = 'g'
+#             # period[x] = 0.0
+#         if lh1[x] < 0.1:
+#             print '!!!!!! LOCAL PEAK HEIGHT < 0.1 !!!!!!'
+#             #period[x] = -9999.0
+#             n_s = 'b'
+#             # period[x] = 0.0
 
         print 'PEAK RATIO = ', peak_ratio
 
@@ -225,7 +228,7 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
         pylab.ylabel('Amplitudes')
         #pylab.savefig('%s/CoRoT/plots_acf/%sa%sKIC%s_full.png'\
         #% (dir, kid_x, Amps[z], names[y]))
-        pylab.savefig('%s/%s%s_full.png' %(dir, q, kid))
+        pylab.savefig('%s/%s%s_full.png' %(dir, q, id_list))
 #         pylab.savefig('%s/CoRoT/plots_acf/%s_full.png'\
 #                       % (dir, x))
 
@@ -266,7 +269,7 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
                    max(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]))
 #         pylab.savefig('%s/CoRoT/plots_z/%s_zoom.png' \
 #                                   %(dir, x))
-        pylab.savefig('%s/%s%s_zoom.png' %(dir, q, kid))
+        pylab.savefig('%s/%s%s_zoom.png' %(dir, q, id_list))
 
         print '**************************', 'KID = ', x, 'PEAK HEIGHT = ', \
             max(acf_per_height[:2]), 'LOCAL PEAK HEIGHT = ', lh1[x]
@@ -279,11 +282,11 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
         t_stats.add_column('locheight', locheight)
 #         savefilen = '%s/CoRoT/dat_files/%s_stats.txt' \
 #             %(dir, x)
-        savefilen = '%s/%s%s_stats.txt' %(dir, q, kid)
+        savefilen = '%s/%s%s_stats.txt' %(dir, q, id_list)
         atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
 
         print 'PERIOD = ', period[x]
-
+        np.savetxt('%s/%sresult.txt'%(dir, q), np.transpose((period[x], dlag_per_err[x])))
 
     t = atpy.Table()
     t.add_column('period', period) #period
@@ -303,7 +306,8 @@ def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
     t.add_column('harmonic_det', harmonic_det)
     t.add_column('amp_all', amp_all)
     t.add_column('amp_per', amp_per)
-    savefilen = '%s/results.txt' % (dir)
+#     print 'p = ', period
+#     savefilen = '%s/results.txt' % (dir)
     atpy.asciitables.write_ascii(t, savefilen, delimiter = ' ', overwrite = True)
 
     return
@@ -405,13 +409,13 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
     t_lc = atpy.Table()
     t_lc.add_column('time', time)
     t_lc.add_column('flux', flux)
-    t_lc.write('%s/CoRoT/dat_files/%s_LC.ipac' % (dir, kid), overwrite = True)
+#     t_lc.write('%s/CoRoT/dat_files/%s_LC.ipac' % (dir, kid), overwrite = True)
 
     t_acf = atpy.Table()
     t_acf.add_column('lags_days', lags)
     t_acf.add_column('acf', acf)
     t_acf.add_column('acf_smooth', acf_smooth)
-    t_acf.write('%s/CoRoT/dat_files/%s_ACF.ipac' % (dir, kid), overwrite = True)
+#     t_acf.write('%s/CoRoT/dat_files/%s_ACF.ipac' % (dir, kid), overwrite = True)
 
     pylab.figure(6,(10, 5.5))
     pylab.clf()
@@ -449,7 +453,7 @@ def pgram_calc(time, flux, interval, kid, max_psearch_len):
     t_pg = atpy.Table()
     t_pg.add_column('period', sinout[4])
     t_pg.add_column('pgram', sinout[5])
-    t_pg.write('%s/CoRoT/dat_files/%s_PGRAM.ipac' % (dir, kid), overwrite = True)
+#     t_pg.write('%s/%s_PGRAM.ipac' % (dir, kid), overwrite = True)
 
     return t_pg, sine_per, sine_height
 
@@ -564,8 +568,7 @@ def calc_err(kid, lags, acf, inds, vals, maxnum):
         pylab.xlim(0, 10 * lags[inds[1]])
     pylab.xlabel('Lags (days)')
     pylab.ylabel('ACF')
-#     pylab.savefig('%s/CoRoT/plots_asym/%s_asym.png' % (dir, kid))
-    pylab.savefig('%s/%s%s_asym.png' %(dir, q, kid))
+#     pylab.savefig('%s/%s%s_asym.png' %(dir, q, kid))
 
     return acf_per_err, mean_height, asym
 
@@ -811,8 +814,7 @@ def plot_stats(time, flux, kid_x, acf_per_pos_in, acf_per_height_in, acf_per_err
     pylab.xlabel('Lag (days)')
     pylab.suptitle('ID: %s, P\_dlag = %.3fd +/-%.3fd, P\_pk = %.3fd' \
                    %(kid_x, med_per, mad_per_err, pk1), fontsize = 16)
-#     pylab.savefig('%s/CoRoT/plots_stats/%s_stats.png' % (dir, kid_x))
-    pylab.savefig('%s/%s%s_stats.png' %(dir, q, kid))
+#     pylab.savefig('%s/%s%s_stats.png' %(dir, q, kid))
 
     peak_ratio = len(acf_per_pos)/len(acf_per_pos_in)
 
@@ -850,9 +852,7 @@ def calc_var(kid = None, time_in = None, flux = None, period = None):
         per_cent = per_cent[scipy.isfinite(var_arr) == True]
         var_med = scipy.median(var_arr_real)
 
-
-#         savefilen = '%s/CoRoT/dat_files/%s_amps.txt' % (dir, kid)
-        savefilen = '%s/%s%s_amps.txt' % (dir, q, kid)
+        savefilen = '%s/%s_amps.txt' % (dir, kid)
         savefile = open(savefilen, 'w')
         savefile.write('per_centre   amp\n')
         for z in scipy.arange(len(per_cent)):
