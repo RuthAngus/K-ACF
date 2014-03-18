@@ -2,8 +2,18 @@
 
 import numpy as np
 import scipy
-import pylab
+import pylab as pl
 import atpy
+
+plotpar = {'axes.labelsize': 20,
+           'text.fontsize': 18,
+           'legend.fontsize': 14,
+           'xtick.labelsize': 20,
+           'ytick.labelsize': 20, 
+           'text.usetex': True}
+pl.rcParams.update(plotpar)
+cols = [ '#66FF66','#66CCCC' , '#FF9933']
+
 mps = []
 ids = []
 nerrs = []
@@ -112,7 +122,9 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
                    sine11, sine12, sine13, sine14, sine15, sine16]  
     KID_meth_string = ['Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10', 'Q11', 'Q12', 'Q13', 'Q14', 'Q15', 'Q16']
     xtick_values = [1,2,3,4,5,6,7,8,9,10,11,12, 13, 14]
-    xtick_labels = ['3','4','5','6','7','8','9','10','11','12','13','14', '15', '16']
+    xtick_labels = ['$\mathrm{3}$','$\mathrm{4}$','$\mathrm{5}$','$\mathrm{6}$','$\mathrm{7}$','$\mathrm{8}$',\
+                    '$\mathrm{9}$','$\mathrm{10}$','$\mathrm{11}$','$\mathrm{12}$','$\mathrm{13}$','$\mathrm{14}$',\
+                    '$\mathrm{15}$', '$\mathrm{16}$']
     fig_dir = 'ind_qs_figs'
 
     # Loop over all targets
@@ -141,46 +153,46 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
         # PLOTTING
         KID1s = range(1,len(KID_method)+1)
         fake_errors = np.zeros(len(KID_method))
-        pylab.figure(1)
-        pylab.clf()
+        pl.figure(1)
+        pl.clf()
 
         # Only plot if a period measurement was made. 
         for j in range(0,len(KID_method)):
             if periods[j] > 0. and errors[j] > 0.:
-                pylab.errorbar(KID1s[j], periods[j], yerr = errors[j], marker = 'o', color = 'b', markersize = 5)
-            else: pylab.axvline(j+1, linewidth = 0.5, color = 'r', linestyle = '--')
+                pl.errorbar(KID1s[j], periods[j], yerr = errors[j], marker = 'o', color = 'k', markersize = 3, capsize = 0, ecolor = '0.7')
+            # else: pl.axvline(j+1, linewidth = 0.5, color = cols[1], linestyle = '--')
             if sines[j] > 0.:
                 red_herring = 0
-                #pylab.errorbar(KID1s[j], sines[j], yerr = fake_errors[j], marker = 'o', color = 'r', markersize = 5)
-        pylab.ylabel('Period')
-        pylab.xlabel('Quarters')
+                #pl.errorbar(KID1s[j], sines[j], yerr = fake_errors[j], marker = 'o', color = cols[1], markersize = 5)
+        pl.ylabel('$\mathrm{Rotation~Period~(Days)}$')
+        pl.xlabel('$\mathrm{Quarter}$')
         #if max(sines)>max(periods):
         #    upper_y_lim = max(sines) + 5
         #else:
         upper_y_lim = max(periods) + 5
-        pylab.xlim(0, len(KID_meth_string)+1)
-        pylab.ylim(0,upper_y_lim)
-        #pylab.axhline(sine_median, linewidth = 0.5, color = 'r')
+        pl.xlim(0, len(KID_meth_string)+1)
+        pl.ylim(0,upper_y_lim)
+        #pl.axhline(sine_median, linewidth = 0.5, color = cols[1])
 
         '''Adding harmonic lines'''
-        pylab.axhline(acf_median, linewidth = 0.5, color = 'b')
-        pylab.axhline(acf_median/2., linewidth = 0.5, color = 'b', linestyle = '--')
+        pl.axhline(acf_median, linewidth = 0.5, color = cols[1])
+        pl.axhline(acf_median/2., linewidth = 0.5, color = cols[1], linestyle = '--')
         period_multiple = 0; harmonic=2
         if acf_median != 0:
             while period_multiple < upper_y_lim:
                 period_multiple = acf_median*harmonic
-                pylab.axhline(period_multiple, linewidth = 0.5, color = 'b', linestyle = '--')
+                pl.axhline(period_multiple, linewidth = 0.5, color = cols[1], linestyle = '--')
                 harmonic += 1
         
         #if 0<sine_median<1000 and sine_median != acf_median:
             #red_herring = 0
-            #pylab.text(10.1, sine_median, 'Sine', color = 'r')
+            #pl.text(10.1, sine_median, 'Sine', color = cols[1])
         #if 0<acf_median<1000:
-            #pylab.text(10.1, acf_median, 'ACF', color = 'b')
+            #pl.text(10.1, acf_median, 'ACF', color = cols[1])
             
         KID_string = np.int(i)
         KID_string = np.str(KID_string)
-        pylab.title('%s' %KID_string)
+        pl.title('$\mathrm{%s}$' %KID_string)
         
         '''Making sure that all measurements lie within 15% of the harmonic lines'''
         number_of_measurements = 0
@@ -202,14 +214,14 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
                     number_of_good_measurements += 1
                 ##elif  sine_median - sine_median/(margin*2) < periods[p] < sine_median + sine_median/(margin*2):
                 ##number_of_good_measurements += 1
-        #pylab.axhspan(acf_median - acf_median/margin, acf_median + acf_median/margin, facecolor='b', alpha=0.1)
-        #pylab.axhspan(acf_median*2.0 - acf_median*2.0/margin, acf_median*2.0 + acf_median*2.0/margin, facecolor='b', alpha=0.1)
-        #pylab.axhspan(acf_median*0.5 - acf_median*0.5/margin, acf_median*0.5 + acf_median*0.5/margin, facecolor='b', alpha=0.1)
-        ##pylab.axhspan(sine_median - sine_median/(margin*2), sine_median + sine_median/(margin*2), facecolor='r', alpha=0.1)
-        pylab.axhspan(acf_median - margin, acf_median + margin, facecolor='b', alpha=0.1)
-        pylab.axhspan(acf_median*2.0 - margin, acf_median*2.0 + margin, facecolor='b', alpha=0.1)
-        pylab.axhspan(acf_median*3.0 - margin, acf_median*3.0 + margin, facecolor='b', alpha=0.1)
-        pylab.axhspan(acf_median*0.5 - margin, acf_median*0.5 + margin, facecolor='b', alpha=0.1)
+        #pl.axhspan(acf_median - acf_median/margin, acf_median + acf_median/margin, facecolor=cols[1], alpha=0.1)
+        #pl.axhspan(acf_median*2.0 - acf_median*2.0/margin, acf_median*2.0 + acf_median*2.0/margin, facecolor=cols[1], alpha=0.1)
+        #pl.axhspan(acf_median*0.5 - acf_median*0.5/margin, acf_median*0.5 + acf_median*0.5/margin, facecolor=cols[1], alpha=0.1)
+        ##pl.axhspan(sine_median - sine_median/(margin*2), sine_median + sine_median/(margin*2), facecolor=cols[1], alpha=0.1)
+        pl.axhspan(acf_median - margin, acf_median + margin, facecolor=cols[1], alpha=0.2)
+        pl.axhspan(acf_median*2.0 - margin, acf_median*2.0 + margin, facecolor=cols[1], alpha=0.2)
+        pl.axhspan(acf_median*3.0 - margin, acf_median*3.0 + margin, facecolor=cols[1], alpha=0.2)
+        pl.axhspan(acf_median*0.5 - margin, acf_median*0.5 + margin, facecolor=cols[1], alpha=0.2)
 
         '''Requires that periods are measured in at least 2/3'''
         if years == True:
@@ -217,16 +229,16 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
         else:
             relax = 2./3.
         if number_of_measurements < int((len(KID_meth_string))*relax): 
-            #pylab.text(0,0, 'MISSING MEASUREMENTS, require %s/%s' %( int((len(KID_meth_string))*2./3.), len(KID_meth_string)))
-            pylab.axvspan(0, 120, facecolor='r', alpha=0.07)
+            #pl.text(0,0, 'MISSING MEASUREMENTS, require %s/%s' %( int((len(KID_meth_string))*2./3.), len(KID_meth_string)))
+            pl.axvspan(0, 120, facecolor=cols[1], alpha=0.07)
             selected = False
             #require that 2/3 measurements are good!
         else:
             bonus = number_of_measurements - int((len(KID_meth_string))*relax) + 1
             outliers = number_of_measurements - number_of_good_measurements
             if outliers > bonus:
-                pylab.axvspan(0, 20, facecolor='r', alpha=0.07)
-                #pylab.text(0,0, 'INCONSISTENT MEASUREMENTS, require < %s outliers' %(outliers - bonus + 3))
+                pl.axvspan(0, 20, facecolor=cols[1], alpha=0.07)
+                #pl.text(0,0, 'INCONSISTENT MEASUREMENTS, require < %s outliers' %(outliers - bonus + 3))
                 selected = False
             else:
                 final_KID_list.append(KID_string)
@@ -237,11 +249,11 @@ def period_extract(all_data = False, ind_quarters = False, years = False):
                 selected = True
         
           
-        pylab.xticks(xtick_values, xtick_labels)
+        pl.xticks(xtick_values, xtick_labels)
         print KID_string
         #if years == True and selected == True:
             #print max(periods) - min(periods)
-        pylab.savefig('/Users/angusr/angusr/ACF/%s/%s.pdf' %(fig_dir, KID_string))
+        pl.savefig('/Users/angusr/angusr/ACF/%s/%s.pdf' %(fig_dir, KID_string))
         #raw_input('enter')
 
     print final_KID_list

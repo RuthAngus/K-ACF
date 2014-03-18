@@ -67,20 +67,23 @@ nqs = 12
     tps = true periods'''
     
 # Load true periods
-tps = [np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' %(i+1))[7] for i in range(nstars)]
+tps = np.array([np.genfromtxt('/Users/angusr/angusr/ACF/star_spot_sim/grid/%sparams.txt' \
+                              %(i+1))[7] for i in range(nstars)])
 
 # Load measured periods
-mps = [np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' %(q+3)).T[1][1:] for q in range(nqs)]
-mp_errs = [np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' %(q+3)).T[6][1:] for q in range(nqs)]
+mps = np.array([np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' \
+                     %(q+3)).T[1][1:] for q in range(nqs)])
+mp_errs = np.array([np.genfromtxt('/Users/angusr/angusr/ACF/PDCQss%s_output/results.txt' \
+                         %(q+3)).T[6][1:] for q in range(nqs)])
 
 meanp, meanp_err = zip(*[weighted_mean(mps[i], mp_errs[i]) for i in range(len(mps))])
 medianp = [np.median(mps[i]) for i in range(len(mps))]
       
-mps = medianp
-np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true2.txt', \
-                  np.transpose((tps, mps, mp_errs)))
+mps = np.array(medianp)
+# np.savetxt('/Users/angusr/angusr/ACF/star_spot_sim/measured_vs_true2.txt', \
+                  # np.transpose((tps, mps, mp_errs)))
 
-a = m_periods > 0 # Remove non-detections
+a = mps > 0 # Remove non-detections
 # Mask removes the outliers
 mask = [np.nan for i in range(len(tps[a])) if 17 < tps[a][i] < 22 and 6 < mps[a][i] < 10]
 mask = np.isfinite(mask)
@@ -104,13 +107,15 @@ pl.plot(.5*x, x, color = cols[1], linestyle = '--')
 pl.plot(x, 0.4*x, color = cols[0], linestyle = '--')
 pl.plot(x, 0.6*x, color = cols[0], linestyle = '--')
 pl.plot(2*x, x, color = cols[1], linestyle = '--')
-pl.errorbar(tps[a], mps[a], yerr = mp_errs[a], \
-            fmt = 'k.', markersize = 2, capsize = 0, ecolor = '0.7' )
+
+print len(tps[a]), len(mps[a]), len(mp_errs[a]), len(a), type(tps), type(mps), type(mp_errs)
+pl.plot(tps[a], mps[a])
+# pl.errorbar(tps[a], mps[a], yerr = mp_errs[a])#, \
+            # fmt = 'k.', markersize = 2, capsize = 0, ecolor = '0.7' )
 pl.ylabel('$\mathrm{Recovered~period~(days)}$', fontsize = 25)
 pl.xlim(0, 25)
 pl.ylim(0, 25)
 pl.gca().set_xticklabels([])
-   
 # Residuals
 ax2 = pl.subplot2grid((4,4), (3, 0), colspan = 4)
 pl.errorbar(tps[a][mask], (-tps[a][mask] + mps[a][mask]), yerr = mp_errs[a][mask], \
