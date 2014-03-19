@@ -39,7 +39,8 @@ def load_data(lc_file):
     n = np.isfinite(x)*np.isfinite(y)*np.isfinite(yerr)*(q==0)
     return x[n], y[n], yerr[n]
 
-def corr_run(time, flux, flux_err, id_list, lc_file, q, tr_out = False, tr_type = None):
+# def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
+def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
 
     # Create empty arrays
     acf_peak_per = scipy.ones(len(id_list)) * -9999.0
@@ -228,6 +229,7 @@ def corr_run(time, flux, flux_err, id_list, lc_file, q, tr_out = False, tr_type 
         pylab.ylabel('Amplitudes')
         #pylab.savefig('%s/CoRoT/plots_acf/%sa%sKIC%s_full.png'\
         #% (dir, kid_x, Amps[z], names[y]))
+        print "saving figure", q, "%s/%s%s_full.png"%(dir, q, id_list)
         pylab.savefig('%s/%s%s_full.png' %(dir, q, id_list))
 #         pylab.savefig('%s/CoRoT/plots_acf/%s_full.png'\
 #                       % (dir, x))
@@ -285,8 +287,13 @@ def corr_run(time, flux, flux_err, id_list, lc_file, q, tr_out = False, tr_type 
         savefilen = '%s/%s%s_stats.txt' %(dir, q, id_list)
         atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
 
-        print 'PERIOD = ', period[x]
-        np.savetxt('%s/%sresult.txt'%(dir, q), np.transpose((period[x], dlag_per_err[x])))
+        if dlag_per_err[x] == 0.:
+#              error = w1[x]
+             error = acf_per_err[x]
+        else: error = dlag_per_err[x]
+
+        print 'PERIOD = ', period[x], '+/-', error,
+        np.savetxt('%s/%sresult.txt'%(dir, q), np.transpose((period[x], error)))
 
     t = atpy.Table()
     t.add_column('period', period) #period
@@ -308,7 +315,7 @@ def corr_run(time, flux, flux_err, id_list, lc_file, q, tr_out = False, tr_type 
     t.add_column('amp_per', amp_per)
 #     print 'p = ', period
 #     savefilen = '%s/results.txt' % (dir)
-    atpy.asciitables.write_ascii(t, savefilen, delimiter = ' ', overwrite = True)
+#     atpy.asciitables.write_ascii(t, savefilen, delimiter = ' ', overwrite = True)
 
     return
 
@@ -583,6 +590,7 @@ def plot_stats(time, flux, kid_x, acf_per_pos_in, acf_per_height_in, acf_per_err
     locheight_in = locheight_in[asym_in != -9999]
     asym_in = asym_in[asym_in != -9999]
 
+
     if len(acf_per_pos_in) == 0: return -9999, -9999, -9999, -9999, -9999, -9999,\
         -9999, -9999, -9999, -9999, 0, -9999, -9999, 1, 0.0
 
@@ -662,16 +670,19 @@ def plot_stats(time, flux, kid_x, acf_per_pos_in, acf_per_height_in, acf_per_err
     locheight = locheight_in[ind_keep][:x]
     print '%d Peaks kept' %len(acf_per_pos)
 
-
     if len(acf_per_pos) == 1:
+        print 'err', acf_per_err[0]
         return -9999, 0.0, pk1, acf_per_height[0], acf_per_err[0], locheight[0], -9999, -9999, -9999, -9999, 1, hdet, -9999, 1, 0.0
 
     ''' Delta Lag '''
     acf_per_pos_0 = scipy.append(0,acf_per_pos)
     delta_lag = acf_per_pos_0[1:] - acf_per_pos_0[:-1]
     av_delt = scipy.median(delta_lag)
+    print '>>>>>>>>>>', delta_lag - av_delt
     delt_mad = 1.483*scipy.median(abs(delta_lag - av_delt)) # calc MAD
+    print delt_mad
     delt_mad = delt_mad / scipy.sqrt(float(len(delta_lag)-1.0)) # err = MAD / sqrt(n-1)
+    print delt_mad
     med_per = av_delt
     mad_per_err = delt_mad
 
