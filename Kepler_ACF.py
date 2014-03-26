@@ -23,7 +23,7 @@ import mpfit
 import pyfits
 import matplotlib.pyplot as pl
 
-dir = '/Users/angusr/angusr/Kepler'
+# dir = '/Users/angusr/angusr/Kepler'
 gap_days = 0.02043365  # assume for long cadence
 jump_arr = scipy.array([131.51139, 169.51883, 169.75000, 182.00000, 200.31000, 231.00000, 246.19000, 256.00000, 260.22354, 281.00000, 291.00000, 322.00000, 352.37648, 373.23000, 384.00000, 398.00000, 443.48992, 475.50000, 504.00000, 539.44868, 567.00000, 599.00000, 630.17387, 661.00000, 691.00000, 711.20000, 735.36319, 762.00000, 808.51558, 845.00000, 874.50000, 906.84469, 937.00000, 970.00000, 1001.20718, 1032.50000, 1063.50000 ,1071.00000, 1093.60000])
 
@@ -40,7 +40,9 @@ def load_data(lc_file):
     return x[n], y[n], yerr[n]
 
 # def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
-def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
+def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = None):
+
+    id_list = [id_list]
 
     # Create empty arrays
     acf_peak_per = scipy.ones(len(id_list)) * -9999.0
@@ -63,9 +65,9 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
 
     # load data
 #     time, flux, flux_err = load_data(lc_file)
-    pl.clf()
-    pl.plot(time, flux, 'k.')
-    pl.savefig('%s/data%s'%(dir, q))
+#     pl.clf()
+#     pl.plot(time, flux, 'k.')
+#     pl.savefig('%s/%s_%s_data'%(dir, id_list[0], q))
 
     mdn = np.median(flux)
     flux = flux-mdn
@@ -197,7 +199,6 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
 
         print 'PEAK RATIO = ', peak_ratio
 
-
         # plot period lines on full plot
         pylab.figure(1)
         pylab.subplot(4,1,4)
@@ -230,7 +231,7 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
         #pylab.savefig('%s/CoRoT/plots_acf/%sa%sKIC%s_full.png'\
         #% (dir, kid_x, Amps[z], names[y]))
         print "saving figure", q, "%s/%s%s_full.png"%(dir, q, id_list)
-        pylab.savefig('%s/%s%s_full.png' %(dir, q, id_list))
+        pylab.savefig('%s/%s_%s_full.png' %(dir, int(id_list[0]), q))
 #         pylab.savefig('%s/CoRoT/plots_acf/%s_full.png'\
 #                       % (dir, x))
 
@@ -271,7 +272,7 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
                    max(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]))
 #         pylab.savefig('%s/CoRoT/plots_z/%s_zoom.png' \
 #                                   %(dir, x))
-        pylab.savefig('%s/%s%s_zoom.png' %(dir, q, id_list))
+#         pylab.savefig('%s/%s%s_zoom.png' %(dir, q, id_list))
 
         print '**************************', 'KID = ', x, 'PEAK HEIGHT = ', \
             max(acf_per_height[:2]), 'LOCAL PEAK HEIGHT = ', lh1[x]
@@ -284,8 +285,8 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
         t_stats.add_column('locheight', locheight)
 #         savefilen = '%s/CoRoT/dat_files/%s_stats.txt' \
 #             %(dir, x)
-        savefilen = '%s/%s%s_stats.txt' %(dir, q, id_list)
-        atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
+#         savefilen = '%s/%s_stats.txt' %(dir, q)
+#         atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
 
         if dlag_per_err[x] == 0.:
 #              error = w1[x]
@@ -293,7 +294,7 @@ def corr_run(time, flux, flux_err, id_list, q, tr_out = False, tr_type = None):
         else: error = dlag_per_err[x]
 
         print 'PERIOD = ', period[x], '+/-', error,
-        np.savetxt('%s/%sresult.txt'%(dir, q), np.transpose((period[x], error)))
+        np.savetxt('%s/%s_%s_result.txt'%(dir, int(id_list[0]), q), np.transpose((period[x], error)))
 
     t = atpy.Table()
     t.add_column('period', period) #period
@@ -863,12 +864,12 @@ def calc_var(kid = None, time_in = None, flux = None, period = None):
         per_cent = per_cent[scipy.isfinite(var_arr) == True]
         var_med = scipy.median(var_arr_real)
 
-        savefilen = '%s/%s_amps.txt' % (dir, kid)
-        savefile = open(savefilen, 'w')
-        savefile.write('per_centre   amp\n')
-        for z in scipy.arange(len(per_cent)):
-            savefile.write('%f   %f\n' %(per_cent[z], var_arr_real[z]))
-        savefile.close()
+#         savefilen = '%s/%s_amps.txt' % (dir, kid)
+#         savefile = open(savefilen, 'w')
+#         savefile.write('per_centre   amp\n')
+#         for z in scipy.arange(len(per_cent)):
+#             savefile.write('%f   %f\n' %(per_cent[z], var_arr_real[z]))
+#         savefile.close()
     else:
         var_med = -9999
         per_cent = scipy.array([-9999])
