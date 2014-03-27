@@ -13,10 +13,10 @@ all_perrs = data[2]
 KIDs = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
 
 # tuning params
-m = .2
-f = .5
-l = 0
-d = 100.
+m = .2 # periods must lie within what fraction of the median?
+f = .7 # what fraction of total measurements required to be consistent?
+l = 0. # what number of quarters must be available?
+d = 100. # within what fraction of the median must the residual p measurement lie?
 
 accept = []; accept_p = []; accept_perr = []
 for i, k in enumerate(KIDs):
