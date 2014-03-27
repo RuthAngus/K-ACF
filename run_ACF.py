@@ -32,6 +32,45 @@ def check(DIR):
     for i in range(len(p)):
         print p[i], p_err[i]
 
+def quarter_acf(lc_files, quarters, savedir):
+    # record kid and quarter and run ACF
+    for i, lc_file in enumerate(lc_files):
+        q = quarters.index(str(lc_file[48:61]))
+        kid = lc_file[38:47]
+        time, flux, flux_err = load_data(lc_file)
+        corr_run(time, flux, flux_err, kid, q, savedir)
+
+def year_acf(globfile, id_list, savedir)
+    # loop over stars
+    for i, kid in enumerate(id_list):
+        # load each quarter
+        lc_files = np.array(glob.glob('%s/kplr*%s*_llc.fits'%(globfile(int(kid)))))
+        for yr in range(4):
+            # initialise the time and flux arrays
+            time, flux, flux_err = load_data(lc_files[yr-4])
+            # loop over quarters
+            for i in range(yr-4+1, yr):
+                time = np.concatenate((time, load_data(lc_files[i])[0]))
+                flux = np.concatenate((flux, load_data(lc_files[i])[1]))
+                flux_err = np.concatenate((flux_err, load_data(lc_files[i])[2]))
+            # run ACF, once per star
+            corr_run(time, flux, flux_err, kid, 'yr%s'%(yr+1), savedir)
+
+def all_acf(globfile, id_list, savedir):
+    # loop over stars
+    for i, kid in enumerate(id_list):
+        # load each quarter
+        lc_files = np.array(glob.glob('%s/kplr*%s*_llc.fits'%(globfile, int(kid))))
+        # initialise the time and flux arrays
+        time, flux, flux_err = load_data(lc_files[0])
+        # loop over quarters
+        for i in range(1, len(lc_files)):
+            time = np.concatenate((time, load_data(lc_files[i])[0]))
+            flux = np.concatenate((flux, load_data(lc_files[i])[1]))
+            flux_err = np.concatenate((flux_err, load_data(lc_files[i])[2]))
+        # run ACF, once per star
+        corr_run(time, flux, flux_err, kid, 'all', savedir)
+
 # define directory where results will be saved
 savedir = "/Users/angusr/angusr/ACF2" # directory in which results are saved
 
@@ -45,28 +84,9 @@ quarters = ["2009131105131", "2009166043257", "2009259160929", "2009350155506", 
         "2012088054726", "2012179063303", "2012277125453", "2013011073258", \
         "2013098041711"]
 
-# record kid and quarter and run ACF
-for i, lc_file in enumerate(lc_files):
-    q = quarters.index(str(lc_file[48:61]))
-    kid = lc_file[38:47]
-    time, flux, flux_err = load_data(lc_file)
-    corr_run(time, flux, flux_err, kid, q, savedir)
-
-# # load list of targets
-# id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
-
-# # Join quarters together
-# # loop over stars
-# for i, kid in enumerate(id_list):
-#     # load each quarter
-#     lc_files = np.array(glob.glob('/Users/angusr/angusr/data2/all_Qs/kplr*%s*_llc.fits'\
-#             %int(kid)))
-#     # initialise the time and flux arrays
-#     time, flux, flux_err = load_data(lc_files[0])
-#     # loop over quarters
-#     for i in range(1, len(lc_files)):
-#         time = np.concatenate((time, load_data(lc_files[i])[0]))
-#         flux = np.concatenate((flux, load_data(lc_files[i])[1]))
-#         flux_err = np.concatenate((flux_err, load_data(lc_files[i])[2]))
-#     # run ACF, once per star
-#     corr_run(time, flux, flux_err, kid, 'all', savedir)
+quarter_acf(lc_files, quarters, savedir)
+# load list of targets
+id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
+globfile = '/Users/angusr/angusr/data2/all_Qs/'
+year_acf(globfile, id_list, savedir)
+all_acf(globfile, id_list, savedir)
