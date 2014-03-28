@@ -200,8 +200,11 @@ if __name__ == "__main__":
                 # ts = [time, area covered in spots, flux, flux w diff rot]
                 time, area, flux, diff_flux = ts
                 ts[2] = y + ts[2]*myamp[i]
+                lc = np.ndarray((len(ts)+1, len(ts[0])))
+                lc[1:,:] = ts
+                lc[-1:,:] = yerr
                 scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1), q), \
-                        {'pars': pars, 'ts': ts})
+                        {'pars': pars, 'ts': lc})
 
                 # save file of parameters
                 np.savetxt('%s/pars_%s_%s.txt'%(savedir, (i+1), q), \
@@ -215,10 +218,10 @@ if __name__ == "__main__":
             # load data
             lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
             x, y, yerr = load(lc_files[0])
-            for q, lc_file in enumerate(lc_files):
-                x = np.concatenate((x, (load(lc_files[q+1])[0])))
-                y = np.concatenate((y, (load(lc_files[q+1])[1])))
-                yerr = np.concatenate((yerr, (load(lc_files[q+1])[2])))
+            for q in range(1, len(lc_files)):
+                x = np.concatenate((x, (load(lc_files[q])[0])))
+                y = np.concatenate((y, (load(lc_files[q])[1])))
+                yerr = np.concatenate((yerr, (load(lc_files[q])[2])))
 
             # generate simulated lcs
             doplot = True
@@ -237,8 +240,11 @@ if __name__ == "__main__":
             # ts = [time, area covered in spots, flux, flux w diff rot]
             time, area, flux, diff_flux = ts
             ts[2] = y + ts[2]*myamp[i]
+            lc = np.ndarray((len(ts)+1, len(ts[0])))
+            lc[1:,:] = ts
+            lc[-1:,:] = yerr
             scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1), 'all'), \
-                    {'pars': pars, 'ts': ts})
+                    {'pars': pars, 'ts': lc})
 
             # save file of parameters
             np.savetxt('%s/pars_%s_%s.txt'%(savedir, (i+1), 'all'), \
@@ -275,8 +281,11 @@ if __name__ == "__main__":
                 # ts = [time, area covered in spots, flux, flux w diff rot]
                 time, area, flux, diff_flux = ts
                 ts[2] = y + ts[2]*myamp[i]
+                lc = np.ndarray((len(ts)+1, len(ts[0])))
+                lc[1:,:] = ts
+                lc[-1:,:] = yerr
                 scipy.io.savemat('%s/sim_%s_yr%s'%(savedir, (i+1), (yr+1)), \
-                        {'pars': pars, 'ts': ts})
+                        {'pars': pars, 'ts': lc})
 
                 # save file of parameters
                 np.savetxt('%s/pars_%s_yr%s.txt'%(savedir, (i+1), (yr+1)), \
