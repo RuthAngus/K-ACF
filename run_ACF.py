@@ -40,7 +40,7 @@ def quarter_acf(lc_files, quarters, savedir):
         time, flux, flux_err = load_data(lc_file)
         corr_run(time, flux, flux_err, kid, q, savedir)
 
-def year_acf(globfile, id_list, savedir)
+def year_acf(globfile, id_list, savedir):
     # loop over stars
     for i, kid in enumerate(id_list):
         # load each quarter
