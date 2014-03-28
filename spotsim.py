@@ -168,7 +168,7 @@ if __name__ == "__main__":
     noise = 0.001
     Amplitude = 1.
 
-    n = 2
+    n = 100
     ps = 10**(np.random.rand(n)*2.) # FIXME: yes Dan, these should be np.exp
     taus = 10**np.random.rand(n)
     myamp = 10**(np.random.rand(n)*1.18)
@@ -259,7 +259,7 @@ if __name__ == "__main__":
                 # load data
                 lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
                 x, y, yerr = load(lc_files[yr*4])
-                for q in range(yr*nrs, (yr*nyrs)+(nqs-1)):
+                for q in range(yr*nyrs, (yr*nyrs)+(nqs-1)):
                     x = np.concatenate((x, (load(lc_files[q+1])[0])))
                     y = np.concatenate((y, (load(lc_files[q+1])[1])))
                     yerr = np.concatenate((yerr, (load(lc_files[q+1])[2])))
