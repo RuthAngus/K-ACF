@@ -179,7 +179,7 @@ if __name__ == "__main__":
         for m, KID in enumerate(names):
             lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
             for q, lc_file in enumerate(lc_files):
-                print 'star = ', n, 'quarter = ', q, '\n'
+                print 'star = ', i, 'quarter = ', q, '\n'
                 # load data
                 x, y, yerr = load(lc_file)
 
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
     # all quarters
     for i in range(n):
-        print 'star = ', n, '\n'
+        print 'star = ', i, '\n'
         for KID in names:
 
             # load data
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     # years
     nyrs = nqs = 4
     for i in range(n):
-        print 'star = ', n, '\n'
+        print 'star = ', i, '\n'
         for KID in names:
             for yr in range(nyrs):
                 # load data
