@@ -71,22 +71,23 @@ def all_acf(globfile, id_list, savedir):
         # run ACF, once per star
         corr_run(time, flux, flux_err, kid, 'all', savedir)
 
-# define directory where results will be saved
-savedir = "/Users/angusr/angusr/ACF2" # directory in which results are saved
+if __name__ == "__main__":
+    # define directory where results will be saved
+    savedir = "/Users/angusr/angusr/ACF2" # directory in which results are saved
 
-# index fits files
-lc_files = np.array(glob.glob('/Users/angusr/angusr/data2/all_Qs/kplr*_llc.fits'))
+    # index fits files
+    lc_files = np.array(glob.glob('/Users/angusr/angusr/data2/all_Qs/kplr*_llc.fits'))
 
-# quarter list
-quarters = ["2009131105131", "2009166043257", "2009259160929", "2009350155506", \
-        "2010078095331", "2010174085026", "2010265121752", "2010355172524", \
-        "2011073133259", "2011177032512", "2011271113734", "2012004120508", \
-        "2012088054726", "2012179063303", "2012277125453", "2013011073258", \
-        "2013098041711"]
+    # quarter list
+    quarters = ["2009131105131", "2009166043257", "2009259160929", "2009350155506", \
+            "2010078095331", "2010174085026", "2010265121752", "2010355172524", \
+            "2011073133259", "2011177032512", "2011271113734", "2012004120508", \
+            "2012088054726", "2012179063303", "2012277125453", "2013011073258", \
+            "2013098041711"]
 
-quarter_acf(lc_files, quarters, savedir)
-# load list of targets
-id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
-globfile = '/Users/angusr/angusr/data2/all_Qs/'
-year_acf(globfile, id_list, savedir)
-all_acf(globfile, id_list, savedir)
+    quarter_acf(lc_files, quarters, savedir)
+    # load list of targets
+    id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
+    globfile = '/Users/angusr/angusr/data2/all_Qs/'
+    year_acf(globfile, id_list, savedir)
+    all_acf(globfile, id_list, savedir)
