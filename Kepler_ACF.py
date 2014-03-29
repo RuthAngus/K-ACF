@@ -63,12 +63,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
     amp_per = scipy.ones(len(id_list)) * -9999.0
     period = scipy.ones(len(id_list)) * -9999.0
 
-    # load data
-#     time, flux, flux_err = load_data(lc_file)
-#     pl.clf()
-#     pl.plot(time, flux, 'k.')
-#     pl.savefig('%s/%s_%s_data'%(dir, id_list[0], q))
-
     mdn = np.median(flux)
     flux = flux-mdn
     lc_tab = atpy.Table()
