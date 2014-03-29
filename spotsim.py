@@ -165,7 +165,8 @@ if __name__ == "__main__":
     datadir = "/Users/angusr/angusr/data2/all_Qs"
     savedir = "/Users/angusr/angusr/injections"
 
-    nspot = 200
+#     nspot = 200
+    nspot = 2
     incl = np.pi*5./12.
     fixedamp = 0.01
     diffrot = 0.5
@@ -207,28 +208,25 @@ if __name__ == "__main__":
             for q, lc_file in enumerate(lc_files):
                 hdulist = pyfits.open(lc_file)
                 tbdata = hdulist[1].data
+                x = tbdata["TIME"]
+                print len(x)
                 y = tbdata["PDCSAP_FLUX"]
+                print len(y)
                 yerr = tbdata["PDCSAP_FLUX_ERR"]
-                qts.append(tbdata["TIME"][0])
-                qtf.append(tbdata["TIME"][-1])
 
                 # split into quarters
-                a = int(np.where(ts[0] == qts)[0])
-                b = int(np.where(ts[0] == qtf)[0])
-                print a, b
-                print np.shape(ts[:,0]), np.shape(ts[0,:]), np.shape(ts[0][a:(b+1)])
-                raw_input('enter')
+                a = int(np.where(ts[0] == x[0])[0])
+                b = int(np.where(ts[0] == x[-1])[0])
 
-                us = np.ndarray((4, len(ts[0][a:(b+1)])))
-                us[0,:] = ts[0][a:(b+1)]
-                us[1,:] = ts[1][a:(b+1)]
-                us[2,:] = ts[2][a:(b+1)]
-                us[3,:] = ts[3][a:(b+1)]
+                us = ts[:,a:(b+1)]
+                print a, b
+                print x[0], x[-1]
+                print ts[0][a], ts[0][b]
+                print len(x), len(us[0])
+                ts = us
 
                 print 'star = ', i+1+m, 'q = ', q, 'KID = ', KID, '\n'
                 print 'i', i, 'm', m, 'q', q
-
-                ts = us
 
                 # save raw simulations
                 scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1+m), q), \
