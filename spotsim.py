@@ -1,6 +1,7 @@
 import scipy
 import scipy.io
 import pylab
+import matplotlib.pyplot as pl
 import numpy as np
 import glob
 import pyfits
@@ -8,7 +9,7 @@ import kepler_quarters
 from load_data import load
 
 def mklc(x, nspot, incl, amp, tau, diffrot, dur, samp, noise, myperiod, \
-        Amplitude, doplot = False):
+        Amplitude, qts, qtf, doplot = False):
 
     ''' This is a simplified version of the class-based routines in
     spot_model.py. It generates a light curves for dark, point like
@@ -35,6 +36,7 @@ def mklc(x, nspot, incl, amp, tau, diffrot, dur, samp, noise, myperiod, \
     # (crude estimate of) total number of spots needed during entire
     # time-series
     nspot_tot = int(nspot * dur / 2 / tau)
+    print nspot, 'nspot', dur, 'dur', tau, 'tau'
 
     # uniform distribution of spot longitudes
     lon = scipy.rand(nspot_tot) * 2 * scipy.pi
@@ -72,7 +74,8 @@ def mklc(x, nspot, incl, amp, tau, diffrot, dur, samp, noise, myperiod, \
     dF_tot = scipy.zeros(npt)
     dF_tot0 = scipy.zeros(npt)
 
-    # add up the contributions of individual spots
+    print "add up the contributions of individual spots"
+    print nspot_tot
     for i in range(nspot_tot):
         # Spot area
         if (pk[i] == 0) + (decay[i] == 0):
@@ -143,6 +146,9 @@ def mklc(x, nspot, incl, amp, tau, diffrot, dur, samp, noise, myperiod, \
     dF_tot = dF_tot/np.median(dF_tot) - 1.
     dF_tot0 = dF_tot0/np.median(dF_tot0) -1.
 
+    # Split into quarters
+    time = time + addit
+
     res0 = scipy.array([nspot_eff.mean(), ff, amp_eff, noise])
     res1 = scipy.zeros((4, npt))
 
@@ -177,119 +183,66 @@ if __name__ == "__main__":
 
     for i in range(n):
         for m, KID in enumerate(names):
-            lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
-            for q, lc_file in enumerate(lc_files):
-                print 'star = ', i, 'quarter = ', q, '\n'
-                # load data
-                x, y, yerr = load(lc_file)
 
-                # generate simulated lcs
-                doplot = True
-                pars, ts = mklc(x, nspot, incl, fixedamp, taus[i], diffrot, dur, samp, noise, \
-                        ps[i], Amplitude, doplot)
-
-                if doplot == True:
-                    pylab.savefig('%s/%s_%s'%(savedir, (i+1+m), q))
-
-                # save raw simulations
-                scipy.io.savemat('%s/sim_%s_%s_raw'%(savedir, (i+1+m), q), \
-                        {'pars': pars, 'ts': ts})
-
-                # add to real Kepler lcs and save
-                nspots, ff, amp, noise = pars
-                # ts = [time, area covered in spots, flux, flux w diff rot]
-                time, area, flux, diff_flux = ts
-                ts[2] = y + ts[2]*myamp[i]
-                lc = np.ndarray((len(ts)+1, len(ts[0])))
-                lc[1:,:] = ts
-                lc[-1:,:] = yerr
-                scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1+m), q), \
-                        {'pars': pars, 'ts': lc})
-
-                # save file of parameters
-                np.savetxt('%s/pars_%s_%s.txt'%(savedir, (i+1+m), q), \
-                        np.transpose((float(KID), ps[i], taus[i], myamp[i], nspots, \
-                        ff, amp, noise)))
-
-    # all quarters
-    for i in range(n):
-        print 'star = ', i, '\n'
-        for KID in names:
-
-            # load data
+            # load Kepler lcs, join quarters together
+            qts = []; qtf = []
             lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
             x, y, yerr = load(lc_files[0])
-            for q in range(1, len(lc_files)):
-                x = np.concatenate((x, (load(lc_files[q])[0])))
-                y = np.concatenate((y, (load(lc_files[q])[1])))
-                yerr = np.concatenate((yerr, (load(lc_files[q])[2])))
+            for j in range(1, len(lc_files)):
+                x = np.concatenate((x, load(lc_files[j])[0]))
+                y = np.concatenate((y, load(lc_files[j])[1]))
+                yerr = np.concatenate((yerr, load(lc_files[j])[2]))
 
             # generate simulated lcs
             doplot = True
-            pars, ts = mklc(x, nspot, incl, fixedamp, taus[i], diffrot, dur, samp, noise, \
-                    ps[i], Amplitude, doplot)
+            pars, ts = mklc(x, nspot, incl, fixedamp, taus[i], diffrot, \
+                    dur, samp, noise, ps[i], Amplitude, qts, qtf, doplot)
 
+            # plot
             if doplot == True:
-                pylab.savefig('%s/%s_%s'%(savedir, (i+1+m), 'all'))
+                pylab.savefig('%s/%s'%(savedir, (i+1+m)))
 
-            # save raw simulations
-            scipy.io.savemat('%s/sim_%s_%s_raw'%(savedir, (i+1+m), 'all'), \
-                    {'pars': pars, 'ts': ts})
+            print "saving data..."
+            # save data as individual quarters
+            for q, lc_file in enumerate(lc_files):
+                hdulist = pyfits.open(lc_file)
+                tbdata = hdulist[1].data
+                y = tbdata["PDCSAP_FLUX"]
+                yerr = tbdata["PDCSAP_FLUX_ERR"]
+                qts.append(tbdata["TIME"][0])
+                qtf.append(tbdata["TIME"][-1])
 
-            # add to real Kepler lcs and save
-            nspots, ff, amp, noise = pars
-            # ts = [time, area covered in spots, flux, flux w diff rot]
-            time, area, flux, diff_flux = ts
-            ts[2] = y + ts[2]*myamp[i]
-            lc = np.ndarray((len(ts)+1, len(ts[0])))
-            lc[1:,:] = ts
-            lc[-1:,:] = yerr
-            scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1+m), 'all'), \
-                    {'pars': pars, 'ts': lc})
+                # split into quarters
+                a = int(np.where(ts[0] == qts)[0])
+                b = int(np.where(ts[0] == qtf)[0])
+                ts[0] = ts[0][a:(b+1)]
+                ts[1] = ts[1][a:(b+1)]
+                ts[2] = ts[2][a:(b+1)]
+                ts[3] = ts[3][a:(b+1)]
 
-            # save file of parameters
-            np.savetxt('%s/pars_%s_%s.txt'%(savedir, (i+1+m), 'all'), \
-                    np.transpose((float(KID), ps[i], taus[i], myamp[i], nspots, \
-                    ff, amp, noise)))
-
-    # years
-    nyrs = nqs = 4
-    for i in range(n):
-        print 'star = ', i, '\n'
-        for KID in names:
-            for yr in range(nyrs):
-                # load data
-                lc_files = np.array(glob.glob("%s/kplr%s*"%(datadir, KID)))
-                x, y, yerr = load(lc_files[yr*4])
-                for q in range(yr*nyrs, (yr*nyrs)+(nqs-1)):
-                    x = np.concatenate((x, (load(lc_files[q+1])[0])))
-                    y = np.concatenate((y, (load(lc_files[q+1])[1])))
-                    yerr = np.concatenate((yerr, (load(lc_files[q+1])[2])))
-
-                # generate simulated lcs
-                doplot = True
-                pars, ts = mklc(x, nspot, incl, fixedamp, taus[i], diffrot, dur, samp, noise, \
-                        ps[i], Amplitude, doplot)
-
-                if doplot == True:
-                    pylab.savefig('%s/%s_yr%s'%(savedir, (i+1+m), (yr+1)))
+                print 'star = ', i+1+m, 'q = ', q, 'KID = ', KID, '\n'
+                print 'i', i, 'm', m, 'q', q
 
                 # save raw simulations
-                scipy.io.savemat('%s/sim_%s_yr%s_raw'%(savedir, (i+1+m), (yr+1)), \
+                scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1+m), q), \
                         {'pars': pars, 'ts': ts})
 
                 # add to real Kepler lcs and save
                 nspots, ff, amp, noise = pars
                 # ts = [time, area covered in spots, flux, flux w diff rot]
                 time, area, flux, diff_flux = ts
+                print np.shape(y), np.shape(ts[2])
+                raw_input('enter')
                 ts[2] = y + ts[2]*myamp[i]
                 lc = np.ndarray((len(ts)+1, len(ts[0])))
-                lc[1:,:] = ts
+                lc[:-1,:] = ts
                 lc[-1:,:] = yerr
-                scipy.io.savemat('%s/sim_%s_yr%s'%(savedir, (i+1+m), (yr+1)), \
+
+                scipy.io.savemat('%s/sim_%s_%s_kplr'%(savedir, (i+1+m), q), \
                         {'pars': pars, 'ts': lc})
 
-                # save file of parameters
-                np.savetxt('%s/pars_%s_yr%s.txt'%(savedir, (i+1+m), (yr+1)), \
-                        np.transpose((float(KID), ps[i], taus[i], myamp[i], nspots, \
-                        ff, amp, noise)))
+            # save file of parameters
+            np.savetxt('%s/pars_%s_%s.txt'%(savedir, (i+1+m), q), \
+                    np.transpose((float(KID), ps[i], taus[i], myamp[i], nspots, \
+                    ff, amp, noise)))
+            raw_input('enter')
