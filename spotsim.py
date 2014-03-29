@@ -215,13 +215,20 @@ if __name__ == "__main__":
                 # split into quarters
                 a = int(np.where(ts[0] == qts)[0])
                 b = int(np.where(ts[0] == qtf)[0])
-                ts[0] = ts[0][a:(b+1)]
-                ts[1] = ts[1][a:(b+1)]
-                ts[2] = ts[2][a:(b+1)]
-                ts[3] = ts[3][a:(b+1)]
+                print a, b
+                print np.shape(ts[:,0]), np.shape(ts[0,:]), np.shape(ts[0][a:(b+1)])
+                raw_input('enter')
+
+                us = np.ndarray((4, len(ts[0][a:(b+1)])))
+                us[0,:] = ts[0][a:(b+1)]
+                us[1,:] = ts[1][a:(b+1)]
+                us[2,:] = ts[2][a:(b+1)]
+                us[3,:] = ts[3][a:(b+1)]
 
                 print 'star = ', i+1+m, 'q = ', q, 'KID = ', KID, '\n'
                 print 'i', i, 'm', m, 'q', q
+
+                ts = us
 
                 # save raw simulations
                 scipy.io.savemat('%s/sim_%s_%s'%(savedir, (i+1+m), q), \
