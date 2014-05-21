@@ -42,6 +42,10 @@ def load_data(lc_file):
 # def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
 def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = None):
 
+    pl.clf()
+    pl.plot(time,flux,'k.')
+    pl.savefig('test%s'%id_list)
+
     id_list = [id_list]
 
     # Create empty arrays
@@ -133,7 +137,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
         pgram_calc(time = lc_tab.time, flux = lc_tab.flux, \
                    interval = gap_days, kid = x, max_psearch_len = max_psearch_len)
 
-
     pylab.figure(1)
     pylab.subplot(4,1,4)
     pylab.plot(acf_tab.lags_days, acf_tab.acf_smooth, 'k-')
@@ -158,7 +161,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
     pylab.plot(acf_tab.lags_days, acf_tab.acf_smooth, 'k-')
     for m in scipy.arange(len(acf_per_pos)):
         pylab.axvline(acf_per_pos[m], ls = '--', c = 'r')
-
 
     # plot and calculate acf peak statistics
     if acf_per_pos[0] != -9999:
@@ -288,7 +290,11 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
         else: error = dlag_per_err[x]
 
         print 'PERIOD = ', period[x], '+/-', error,
+        print 'saving as', '%s/%s_%s_result.txt'%(dir, int(id_list[0]), q)
         np.savetxt('%s/%s_%s_result.txt'%(dir, int(id_list[0]), q), np.transpose((period[x], error)))
+    else:
+        blank = np.array([0,0])
+        np.savetxt('%s/%s_result.txt' %(dir, int(id_list[0])), blank)
 
     t = atpy.Table()
     t.add_column('period', period) #period
@@ -401,6 +407,7 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
             calc_err(kid = kid, lags = lags, acf = acf, inds = t_maxmin_s.ind, vals = t_maxmin_s.val, maxnum = maxnum)
 
     else:
+#         acf_per_pos = scipy.array([-9999])
         acf_per_pos = scipy.array([-9999])
         acf_per_height = scipy.array([-9999])
         acf_per_err = scipy.array([-9999])
@@ -584,7 +591,6 @@ def plot_stats(time, flux, kid_x, acf_per_pos_in, acf_per_height_in, acf_per_err
     acf_per_err_in = acf_per_err_in[asym_in != -9999]
     locheight_in = locheight_in[asym_in != -9999]
     asym_in = asym_in[asym_in != -9999]
-
 
     if len(acf_per_pos_in) == 0: return -9999, -9999, -9999, -9999, -9999, -9999,\
         -9999, -9999, -9999, -9999, 0, -9999, -9999, 1, 0.0

@@ -11,9 +11,7 @@ def load_data(lc_file):
     y = tbdata["PDCSAP_FLUX"]
     yerr = tbdata["PDCSAP_FLUX_ERR"]
     q = tbdata["SAP_QUALITY"]
-    # remove nans
     n = np.isfinite(x)*np.isfinite(y)*np.isfinite(yerr)*(q==0)
-    # median normalise
     y[n] = y[n]/np.median(y[n]) - 1.
     yerr[n] = yerr[n]/np.median(y[n])
     return x[n], y[n], yerr[n]
@@ -90,4 +88,4 @@ if __name__ == "__main__":
     id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
     globfile = '/Users/angusr/angusr/data2/all_Qs/'
     year_acf(globfile, id_list, savedir)
-    all_acf(globfile, id_list, savedir)
+    all_acf(globfile, id_list, savedir

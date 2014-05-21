@@ -18,10 +18,10 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
          dur = 20.0, samp = 0.01, noise = 0.001, doplot = False, myperiod = [10.0], Amplitude = 1.0, quarter = 3):
 
          # spots.py calls runSim which calls mklc
-    
+
     ''' This is a simplified version of the class-based routines in
     spot_model.py. It generates a light curves for dark, point like
-    spots with no limb-darkening. 
+    spots with no limb-darkening.
 
     Parameters:
     nspot = desired number of spots present on star at any
@@ -59,8 +59,8 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         lightcurve.extend(numpy.array(lc))
         time2.extend(numpy.array(time))
 
-    
-    
+
+
     # myperiod = float(myperiod[0])
     print 'Period = ', myperiod
     dur = (max(time2) - min(time2))
@@ -73,17 +73,17 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
     # time-series
     nspot_tot = int(nspot * dur / 2 / tau)
     # uniform distribution of spot longitudes
-    lon = scipy.rand(nspot_tot) * 2 * scipy.pi 
+    lon = scipy.rand(nspot_tot) * 2 * scipy.pi
    # distribution of spot latitudes uniform in sin(latitude)
-    lat = scipy.arcsin(scipy.rand(nspot_tot)) 
+    lat = scipy.arcsin(scipy.rand(nspot_tot))
     # spot rotation rate optionally depends on latitude
 
 
 
-    
+
     period = ((scipy.sin(lat) - 0.5) * diffrot + 1.0 )*myperiod
 
-    
+
     period0 = scipy.ones(nspot_tot)*myperiod
     # all spots have the same maximum area
     # (crude estimate of) filling factor needed per spot
@@ -92,7 +92,7 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
     amax = scipy.ones(nspot_tot) * ff * scale_fac
     # all spots have the evolution timescale
     decay = scipy.ones(nspot_tot) * tau
-    # uniform distribution of spot peak times 
+    # uniform distribution of spot peak times
     # start well before and end well after time-series limits (to
     # avoid edge effects)
     extra = 3 * decay.max()
@@ -100,22 +100,22 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
 
     # COMPUTE THE LIGHT CURVE
     print 'Computing the light curve...'
-    
+
 
     time = numpy.array(time2- min(time2))
     addit = min(time2)
 
-    
+
     npt = len(time)
     area_tot = scipy.zeros(npt)
     dF_tot = scipy.zeros(npt)
     dF_tot0 = scipy.zeros(npt)
 
-   
-    
-    
-    
-    
+
+
+
+
+
     # add up the contributions of individual spots
     for i in range(nspot_tot):
         # Spot area
@@ -125,7 +125,7 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
             area = amax[i] * \
                 scipy.exp(-(time - pk[i])**2 / 2. / decay[i]**2)
         area_tot += area
-        # Fore-shortening 
+        # Fore-shortening
         phase = 2 * scipy.pi * time / period[i] + lon[i]
         phase0 = 2 * scipy.pi * time / period0[i] + lon[i]
         mu = scipy.cos(incl) * scipy.sin(lat[i]) + \
@@ -138,14 +138,14 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         dF_tot -= area * mu
         dF_tot0 -= area * mu0
 
-   
-    
+
+
     print 'Adding noise...'
     # ADD NOISE
     noi = pylab.normal(0, 1, npt) * noise
     dF_tot += noi
     dF_tot0 += noi
-        
+
     amp_eff = dF_tot.max()-dF_tot.min()
     nspot_eff = area_tot / scale_fac / ff
 
@@ -167,14 +167,14 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         yoffr = 0.07
         xwi = (1.0 - xoff - xoffr)
         ywi = (1.0 - yoff - yoffr) / 2
-        xll = xoff 
+        xll = xoff
         yll = 1.0 - yoffr - ywi
         ax1 = pylab.axes([xll, yll, xwi, ywi])
         pylab.plot(time, area_tot * 100, 'k-')
         #pylab.title('i=%.1f <Ns>=%d A=%.4f Fs=%.4f tau=%.2fP sig=%.4f diff=%.1f' \
         #            % (incl * 180 / scipy.pi, nspot_eff.mean(), amp_eff, ff, tau, noise, diffrot))
         #pylab.title('i=%.1f <Ns>=%d tau=%.2fP Period = %d days' \
-        #            % (incl * 180 / scipy.pi, nspot_eff.mean(), tau, myperiod)) 
+        #            % (incl * 180 / scipy.pi, nspot_eff.mean(), tau, myperiod))
         pylab.ylabel('fill. fac. (%)')
         yll = 1.0 - yoffr - 2 * ywi
         axc = pylab.axes([xll, yll, xwi, ywi], sharex = ax1)
@@ -186,13 +186,7 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         pylab.legend()
         #pylab.savefig('/Users/angusr/angusr/ACF/star_spot_sim', )
 
-    
-    
-
-    
-
     # Split into quarters
-        
     print 'quarter = ', quarter
     time = time + addit
     #print 'start = ', quarter_times_start[quarter]
@@ -202,7 +196,7 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
 
     start = int(x[0])
     stop = int(y[0])
-    
+
     time = time[start:stop]
     area_tot = area_tot[start:stop]
     dF_tot = dF_tot[start:stop]
@@ -238,13 +232,13 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
     dF_tot2 = dF_tot + lightcurve*Amplitude
     pylab.plot(time, dF_tot, 'g.')
     pylab.ylim(min(dF_tot), max(dF_tot))
-    
+
     res1[0,:] = time
     res1[1,:] = area_tot
     res1[2,:] = dF_tot
     res1[3,:] = dF_tot0
 
-    
+
     print 'Done'
     return res0, res1
 
@@ -262,8 +256,8 @@ def runSim(amp = 0.01, N = 1, doplot = True, dur = 50, number_of_data_sets = 12,
                 #                 {'pars': pars, 'ts': ts})
                 scipy.io.savemat('%s/%s/sim_%s.png' % (ROOTDIR, (q+3), (star_name+1)), \
                                  {'pars': pars, 'ts': ts})
-            
-    return pars 
 
-# pars = [number of spots, filling factor, amplitude, noise], ts = [time, area_tot, dF_tot, dF_tot0] 
+    return pars
+
+# pars = [number of spots, filling factor, amplitude, noise], ts = [time, area_tot, dF_tot, dF_tot0]
 
