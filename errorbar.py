@@ -8,23 +8,26 @@ period = data[1]
 period_err = data[2]
 
 # load ACF results
-data = np.genfromtxt("/Users/angusr/angusr/ACF2/results.txt").T
+data2 = np.genfromtxt("/Users/angusr/angusr/ACF2/results.txt").T
+KID2 = data2[0]
+period2 = data2[1]
+period_err2 = data2[2]
 
-data = match(KID, data)
-nKID = data[0]
-nperiod = data[1]
-nperiod_err = data[2]
+data3 = match(KID, data2)
+KID3 = data3[0]
+period3 = data3[1]
+period_err3 = data3[2]
 
 n = 0
 for i in range(len(KID)):
-    if period_err[i] > nperiod_err[i]:
-        print KID[i], nKID[i]
-        print period[i], nperiod[i]
-        print period_err[i], nperiod_err[i], '\n'
+    if period_err[i] > period_err3[i]:
+        print KID[i], KID3[i]
+        print period[i], period3[i]
+        print period_err[i], period_err3[i], '\n'
         n+=1
     else:
-        data[2][i] = nperiod_err[i]
+        data[2][i] = period_err3[i]
 
 print n, 'out of', len(KID)
 
-np.savetxt("/Users/angusr/Python/Gyro/data/p_errs.txt", data)
+np.savetxt("/Users/angusr/Python/Gyro/data/p_errs.txt", data.T)
