@@ -182,7 +182,7 @@ def corr_run(time, flux, flux_err, ID, savedir):
         pylab.ylabel('Amplitudes')
 
         print "saving figure", "%s/%s_full.png"%(savedir, id_list)
-        pylab.savefig('%s/%s_full.png' %(savedir, int(id_list[0])))
+        pylab.savefig('%s/%s_full.png' %(savedir, id_list[0]))
 
         maxpts = 40.0
         if scipy.floor(lc_tab.time.max() / acf_peak_per[x]) < maxpts:
@@ -204,8 +204,8 @@ def corr_run(time, flux, flux_err, ID, savedir):
         else: error = dlag_per_err[x]
 
         print 'PERIOD = ', period[x], '+/-', error,
-        print 'saving as', '%s/%s_result.txt'%(savedir, int(id_list[0]))
-        np.savetxt('%s/%s_result.txt'%(savedir, int(id_list[0])),
+        print 'saving as', '%s/%s_result.txt'%(savedir, id_list[0])
+        np.savetxt('%s/%s_result.txt'%(savedir, id_list[0]),
                    np.transpose((period[x], error)))
     else:
         blank = np.array([0,0])
