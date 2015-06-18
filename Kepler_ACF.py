@@ -209,7 +209,7 @@ def corr_run(time, flux, flux_err, ID, savedir):
                    np.transpose((period[x], error)))
     else:
         blank = np.array([0,0])
-        np.savetxt('%s/%s_result.txt' %(savedir, int(id_list[0])), blank)
+        np.savetxt('%s/%s_result.txt' %(savedir, id_list[0]), blank)
 
     t = atpy.Table()
     t.add_column('period', period) #period
