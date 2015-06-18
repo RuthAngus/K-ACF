@@ -15,7 +15,6 @@ from sets import Set
 import collections
 no_rpy = True
 import scipy.io
-
 from scipy import signal
 import KOI_tools_b12 as kt
 import filter
@@ -24,31 +23,19 @@ import mpfit
 import pyfits
 import matplotlib.pyplot as pl
 
-# dir = '/Users/angusr/angusr/Kepler'
 gap_days = 0.02043365  # assume for long cadence
-jump_arr = scipy.array([131.51139, 169.51883, 169.75000, 182.00000, 200.31000, 231.00000, 246.19000, 256.00000, 260.22354, 281.00000, 291.00000, 322.00000, 352.37648, 373.23000, 384.00000, 398.00000, 443.48992, 475.50000, 504.00000, 539.44868, 567.00000, 599.00000, 630.17387, 661.00000, 691.00000, 711.20000, 735.36319, 762.00000, 808.51558, 845.00000, 874.50000, 906.84469, 937.00000, 970.00000, 1001.20718, 1032.50000, 1063.50000 ,1071.00000, 1093.60000])
+jump_arr = scipy.array([131.51139, 169.51883, 169.75000, 182.00000, 200.31000,
+                       231.00000, 246.19000, 256.00000, 260.22354, 281.00000,
+                       291.00000, 322.00000, 352.37648, 373.23000, 384.00000,
+                       398.00000, 443.48992, 475.50000, 504.00000, 539.44868,
+                       567.00000, 599.00000, 630.17387, 661.00000, 691.00000,
+                       711.20000, 735.36319, 762.00000, 808.51558, 845.00000,
+                       874.50000, 906.84469, 937.00000, 970.00000, 1001.20718,
+                       1032.50000, 1063.50000 ,1071.00000, 1093.60000])
 
-def load_data(lc_file):
-    hdulist = pyfits.open(lc_file)
-    tbdata = hdulist[1].data
-    x = tbdata["TIME"]
-    y = tbdata["PDCSAP_FLUX"]
-    yerr = tbdata["PDCSAP_FLUX_ERR"]
-    q = tbdata["SAP_QUALITY"]
+def corr_run(time, flux, flux_err, ID, savedir):
 
-    # remove nans
-    n = np.isfinite(x)*np.isfinite(y)*np.isfinite(yerr)*(q==0)
-    return x[n], y[n], yerr[n]
-
-# def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
-def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = None):
-
-#     pl.clf()
-#     pl.plot(time,flux,'k.')
-#     pl.savefig('test%s'%id_list)
-
-    id_list = [id_list]
-
+    id_list = [ID]
     # Create empty arrays
     acf_peak_per = scipy.ones(len(id_list)) * -9999.0
     sine_per = scipy.ones(len(id_list)) * -9999.0
@@ -67,7 +54,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
     amp_all = scipy.ones(len(id_list)) * -9999.0
     amp_per = scipy.ones(len(id_list)) * -9999.0
     period = scipy.ones(len(id_list)) * -9999.0
-
     mdn = np.median(flux)
     flux = flux-mdn
     lc_tab = atpy.Table()
@@ -77,7 +63,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
 
     qt_max = [0., max(lc_tab.time)]
     tablen = 1
-
     x = 0
 
     # main ACF figure (raw, corr, amp, acf)
@@ -147,16 +132,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
     pylab.ylabel('ACF')
     pylab.xlim(0, acf_tab.lags_days.max())
 
-    pylab.figure(2)
-    pylab.subplot(3,1,3)
-    pylab.plot(pgram_tab.period, pgram_tab.pgram, 'k-')
-    pylab.axvline(sine_per[x], c = 'r', ls = '--')
-    pylab.ylim(0, 1.1*max(pgram_tab.pgram))
-    pylab.axhline(0.3, c = 'g', ls = '--')
-    pylab.xlim(0, pgram_tab.period.max())
-    pylab.ylabel('Periodogram')
-#     pylab.savefig('%s/%s%s_pgram' %(dir, q, kid))
-
     pylab.figure(12)
     pylab.clf()
     pylab.plot(acf_tab.lags_days, acf_tab.acf_smooth, 'k-')
@@ -174,26 +149,6 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
         n_s = 'k'
 
         period[x] = acf_peak_per[x]
-
-#         if max(acf_per_height[:2]) > 0:
-#             if med_dlag_per[x] >0: period[x] = med_dlag_per[x] #########################
-#             else: period[x] = acf_peak_per[x]
-#         else:
-#             print '!!!!!! PEAK HEIGHT < 0 !!!!!!'
-#             n_s = 'r'
-#             #period[x] = -9999.0
-#             # period[x] = 0.0
-#         if one_peak_only == 1:
-#             print '!!!!!! ONLY ONE PEAK FOUND < 0.1 !!!!!!'
-#             #period[x] = -9999.0
-#             n_s = 'g'
-#             # period[x] = 0.0
-#         if lh1[x] < 0.1:
-#             print '!!!!!! LOCAL PEAK HEIGHT < 0.1 !!!!!!'
-#             #period[x] = -9999.0
-#             n_s = 'b'
-#             # period[x] = 0.0
-
         print 'PEAK RATIO = ', peak_ratio
 
         # plot period lines on full plot
@@ -225,51 +180,14 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
         pylab.text(0.415, -0.15, 'Time (days)', transform = ax.transAxes)
         pylab.text(0.415, -1.4, 'Period (days)', transform = ax.transAxes)
         pylab.ylabel('Amplitudes')
-        #pylab.savefig('%s/CoRoT/plots_acf/%sa%sKIC%s_full.png'\
-        #% (dir, kid_x, Amps[z], names[y]))
-        print "saving figure", q, "%s/%s%s_full.png"%(dir, q, id_list)
-        pylab.savefig('%s/%s_%s_full.png' %(dir, int(id_list[0]), q))
-#         pylab.savefig('%s/CoRoT/plots_acf/%s_full.png'\
-#                       % (dir, x))
 
-        # make zoomed in plot to show periodicity
-        pylab.figure(5,(12, 9))
-        pylab.clf()
-        pylab.subplot(3,1,1)
-        # pylab.title('Zoom of ID: %s, showing peak period and av lag period' %x)
+        print "saving figure", "%s/%s_full.png"%(savedir, id_list)
+        pylab.savefig('%s/%s_full.png' %(savedir, int(id_list[0])))
+
         maxpts = 40.0
         if scipy.floor(lc_tab.time.max() / acf_peak_per[x]) < maxpts:
             maxpts = float(scipy.floor(lc_tab.time.max() / acf_peak_per[x]))
         inc = lc_tab.time - lc_tab.time.min() <= (maxpts*acf_peak_per[x])
-        pylab.plot(lc_tab.time[inc], lc_tab.flux[inc], 'k-')
-        for i in scipy.arange(int(maxpts)):
-            pylab.axvline(lc_tab.time.min() + (i)*(acf_peak_per[x]), ls = '--', c = 'b')
-        pylab.xlim(lc_tab.time[inc].min(), lc_tab.time[inc].max())
-        pylab.ylabel('Flux (with Peak Pos)')
-        pylab.subplot(3,1,2)
-        pylab.plot(lc_tab.time[inc], lc_tab.flux[inc], 'k-')
-        for i in scipy.arange(int(maxpts)):
-            pylab.axvline(lc_tab.time.min() + (i)*(med_dlag_per[x]), ls = '--', c = 'r')
-        pylab.xlim(lc_tab.time[inc].min(), lc_tab.time[inc].max())
-        pylab.ylabel('Flux (with Med Pos)')
-        pylab.xlabel('Time (days)')
-        pylab.subplot(3,1,3)
-        pylab.subplots_adjust(top=0.96, bottom = 0.06)
-        pylab.plot(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])], \
-                   acf_tab.acf_smooth[acf_tab.lags_days <= (maxpts*acf_peak_per[x])])
-        pylab.ylabel('ACF')
-        pylab.xlabel('Lag (days)')
-        pylab.axvline(acf_peak_per[x], ls = '--', c = 'b')
-        pylab.axvline(med_dlag_per[x], ls = '--', c = 'r')
-        if acf_tab.lags_days.max() > 10 * acf_peak_per[x]:
-            #print acf_tab.lags_days.max(), 10 * acf_peak_per[x]
-            pylab.xlim(0,10 * acf_peak_per[x])
-        else: pylab.xlim(0,max(acf_tab.lags_days))
-        pylab.xlim(min(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]),\
-                   max(acf_tab.lags_days[acf_tab.lags_days <= (maxpts*acf_peak_per[x])]))
-#         pylab.savefig('%s/CoRoT/plots_z/%s_zoom.png' \
-#                                   %(dir, x))
-#         pylab.savefig('%s/%s%s_zoom.png' %(dir, q, id_list))
 
         print '**************************', 'KID = ', x, 'PEAK HEIGHT = ', \
             max(acf_per_height[:2]), 'LOCAL PEAK HEIGHT = ', lh1[x]
@@ -280,19 +198,15 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
         t_stats.add_column('acf_per_err', acf_per_err)
         t_stats.add_column('asym', asym)
         t_stats.add_column('locheight', locheight)
-#         savefilen = '%s/CoRoT/dat_files/%s_stats.txt' \
-#             %(dir, x)
-#         savefilen = '%s/%s_stats.txt' %(dir, q)
-#         atpy.asciitables.write_ascii(t_stats, savefilen, delimiter = ' ', overwrite = True)
 
         if dlag_per_err[x] == 0.:
-#              error = w1[x]
              error = acf_per_err[x]
         else: error = dlag_per_err[x]
 
         print 'PERIOD = ', period[x], '+/-', error,
-        print 'saving as', '%s/%s_%s_result.txt'%(dir, int(id_list[0]), q)
-        np.savetxt('%s/%s_%s_result.txt'%(dir, int(id_list[0]), q), np.transpose((period[x], error)))
+        print 'saving as', '%s/%s_result.txt'%(savedir, int(id_list[0]))
+        np.savetxt('%s/%s_result.txt'%(savedir, int(id_list[0])),
+                   np.transpose((period[x], error)))
     else:
         blank = np.array([0,0])
         np.savetxt('%s/%s_result.txt' %(dir, int(id_list[0])), blank)
@@ -315,13 +229,7 @@ def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = No
     t.add_column('harmonic_det', harmonic_det)
     t.add_column('amp_all', amp_all)
     t.add_column('amp_per', amp_per)
-#     print 'p = ', period
-#     savefilen = '%s/results.txt' % (dir)
-#     atpy.asciitables.write_ascii(t, savefilen, delimiter = ' ', overwrite = True)
-
     return
-
-###############################################################################################################
 
 def acf_calc(time, flux, interval, kid, max_psearch_len):
 
@@ -334,8 +242,10 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
     pylab.close(50)
 
     #convolve smoothing window with Gaussian kernel
-    gauss_func = lambda x,sig: 1./np.sqrt(2*np.pi*sig**2) * np.exp(-0.5*(x**2)/(sig**2)) #define a Gaussian
-    conv_func = gauss_func(np.arange(-28,28,1.),9.) #create the smoothing kernel
+    gauss_func = lambda x,sig: 1./np.sqrt(2*np.pi*sig**2) * \
+                 np.exp(-0.5*(x**2)/(sig**2)) #define a Gaussian
+    #create the smoothing kernel
+    conv_func = gauss_func(np.arange(-28,28,1.),9.)
 
     acf_smooth = np.convolve(acf,conv_func,mode='same') #and convolve
     lenlag = len(lags)
@@ -405,10 +315,10 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
         print 'Calculating errors and asymmetries...'
         # Calculate peak widths, asymmetries etc
         acf_per_err, locheight, asym= \
-            calc_err(kid = kid, lags = lags, acf = acf, inds = t_maxmin_s.ind, vals = t_maxmin_s.val, maxnum = maxnum)
+            calc_err(kid = kid, lags = lags, acf = acf, inds = \
+            t_maxmin_s.ind, vals = t_maxmin_s.val, maxnum = maxnum)
 
     else:
-#         acf_per_pos = scipy.array([-9999])
         acf_per_pos = scipy.array([-9999])
         acf_per_height = scipy.array([-9999])
         acf_per_err = scipy.array([-9999])
@@ -419,13 +329,11 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
     t_lc = atpy.Table()
     t_lc.add_column('time', time)
     t_lc.add_column('flux', flux)
-#     t_lc.write('%s/CoRoT/dat_files/%s_LC.ipac' % (dir, kid), overwrite = True)
 
     t_acf = atpy.Table()
     t_acf.add_column('lags_days', lags)
     t_acf.add_column('acf', acf)
     t_acf.add_column('acf_smooth', acf_smooth)
-#     t_acf.write('%s/CoRoT/dat_files/%s_ACF.ipac' % (dir, kid), overwrite = True)
 
     pylab.figure(6,(10, 5.5))
     pylab.clf()
@@ -441,11 +349,7 @@ def acf_calc(time, flux, interval, kid, max_psearch_len):
     pylab.xlabel('Period (days)')
     pylab.ylabel('ACF')
     pylab.title('ID: %s, Smoothed \& Unsmoothed ACF' %(kid))
-#     pylab.savefig('%s/%s%s_sm.png' %(dir, q, kid))
-
     return  t_acf, acf_per_pos, acf_per_height, acf_per_err, locheight, asym
-
-###############################################################################################################
 
 def pgram_calc(time, flux, interval, kid, max_psearch_len):
     ''' Calculate Sine Fitting Periodogram'''
@@ -463,11 +367,8 @@ def pgram_calc(time, flux, interval, kid, max_psearch_len):
     t_pg = atpy.Table()
     t_pg.add_column('period', sinout[4])
     t_pg.add_column('pgram', sinout[5])
-#     t_pg.write('%s/%s_PGRAM.ipac' % (dir, kid), overwrite = True)
 
     return t_pg, sine_per, sine_height
-
-###############################################################################################################
 
 def calc_err(kid, lags, acf, inds, vals, maxnum):
     ''' Calculate peak widths, heights and asymmetries '''
@@ -578,7 +479,6 @@ def calc_err(kid, lags, acf, inds, vals, maxnum):
         pylab.xlim(0, 10 * lags[inds[1]])
     pylab.xlabel('Lags (days)')
     pylab.ylabel('ACF')
-#     pylab.savefig('%s/%s%s_asym.png' %(dir, q, kid))
 
     return acf_per_err, mean_height, asym
 
@@ -827,17 +727,18 @@ def plot_stats(time, flux, kid_x, acf_per_pos_in, acf_per_height_in, acf_per_err
     pylab.xlabel('Lag (days)')
     pylab.suptitle('ID: %s, P\_dlag = %.3fd +/-%.3fd, P\_pk = %.3fd' \
                    %(kid_x, med_per, mad_per_err, pk1), fontsize = 16)
-#     pylab.savefig('%s/%s%s_stats.png' %(dir, q, kid))
 
     peak_ratio = len(acf_per_pos)/len(acf_per_pos_in)
 
-    return med_per, mad_per_err, pk1, acf_per_height[acf_per_pos == pk1][0], acf_per_err[acf_per_pos == pk1][0],\
-        locheight[acf_per_pos == pk1][0], h_grad, h_grad_scatter, w_grad, w_grad_scatter, len(acf_per_pos), hdet, acf_per_pos, one_peak_only, peak_ratio
-
-###############################################################################################################
+    return med_per, mad_per_err, pk1, acf_per_height[acf_per_pos == pk1][0], \
+            acf_per_err[acf_per_pos == pk1][0], \
+            locheight[acf_per_pos == pk1][0], h_grad, h_grad_scatter, w_grad, \
+            w_grad_scatter, len(acf_per_pos), hdet, acf_per_pos, \
+            one_peak_only, peak_ratio
 
 def calc_var(kid = None, time_in = None, flux = None, period = None):
-    ''' calculate 5-95th percentile of flux (i.e. amplitude) whole LC and in each period block '''
+    ''' calculate 5-95th percentile of flux (i.e. amplitude) whole LC and in
+    each period block '''
 
     # Of whole LC...
     sort_flc= sorted(flux)
@@ -851,8 +752,10 @@ def calc_var(kid = None, time_in = None, flux = None, period = None):
         var_arr = scipy.zeros(num) + scipy.nan
         per_cent = scipy.zeros(num) + scipy.nan
         for i in scipy.arange(num-1):
-            t_block = time_in[(time_in-time_in.min() >= i*period) * (time_in-time_in.min() < (i+1)*period)]
-            f_block = flux[(time_in-time_in.min() >= i*period) * (time_in-time_in.min() < (i+1)*period)]
+            t_block = time_in[(time_in-time_in.min() >= i*period) * \
+                    (time_in-time_in.min() < (i+1)*period)]
+            f_block = flux[(time_in-time_in.min() >= i*period) * \
+                    (time_in-time_in.min() < (i+1)*period)]
             if len(t_block) < 2: continue
             sort_f_block = sorted(f_block)
             fi_ind = int(len(sort_f_block) * 0.05)
@@ -865,20 +768,12 @@ def calc_var(kid = None, time_in = None, flux = None, period = None):
         per_cent = per_cent[scipy.isfinite(var_arr) == True]
         var_med = scipy.median(var_arr_real)
 
-#         savefilen = '%s/%s_amps.txt' % (dir, kid)
-#         savefile = open(savefilen, 'w')
-#         savefile.write('per_centre   amp\n')
-#         for z in scipy.arange(len(per_cent)):
-#             savefile.write('%f   %f\n' %(per_cent[z], var_arr_real[z]))
-#         savefile.close()
     else:
         var_med = -9999
         per_cent = scipy.array([-9999])
         var_arr_real = scipy.array([-9999])
 
     return amp_flc, var_med, per_cent, var_arr_real
-
-###############################################################################################################
 
 def extrema(x, max = True, min = True, strict = False, withend = False):
 	"""
