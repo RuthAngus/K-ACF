@@ -83,9 +83,9 @@ if __name__ == "__main__":
             "2012088054726", "2012179063303", "2012277125453", "2013011073258", \
             "2013098041711"]
 
-    quarter_acf(lc_files, quarters, savedir)
+#     quarter_acf(lc_files, quarters, savedir)
     # load list of targets
     id_list = np.genfromtxt("/Users/angusr/Python/Gyro/data/astero_targets.txt").T
     globfile = '/Users/angusr/angusr/data2/all_Qs/'
-    year_acf(globfile, id_list, savedir)
-    all_acf(globfile, id_list, savedir
+#     year_acf(globfile, id_list, savedir)
+    all_acf(globfile, id_list, savedir)

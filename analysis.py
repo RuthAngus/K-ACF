@@ -171,9 +171,10 @@ def analyse(pars, DIR, loadfile, globfile, targlist, rmsyn):
 if __name__ == "__main__":
 
     # tuning params
-    m = .2 # periods must lie within what fraction of the median?
+#     m = .2 # periods must lie within what fraction of the median?
+    m = .15 # periods must lie within what fraction of the median?
     f = .7 # what fraction of total measurements required to be consistent?
-    l = 0. # what number of quarters must be available?
+    l = 1. # what number of quarters must be available?
     d = 100. # within what fraction of the median must the residual p measurement lie?
 
 #     DIR = "injections"

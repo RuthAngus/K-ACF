@@ -1,5 +1,6 @@
 # This version of the ACF code is designed to run without the stupid index step
 # It is also totally stripped down and only saves the information that I actually use.
+# the corr_run function takes
 
 import scipy
 from numpy.random import normal
@@ -42,9 +43,9 @@ def load_data(lc_file):
 # def corr_run(id_list, lc_file, q, tr_out = False, tr_type = None):
 def corr_run(time, flux, flux_err, id_list, q, dir, tr_out = False, tr_type = None):
 
-    pl.clf()
-    pl.plot(time,flux,'k.')
-    pl.savefig('test%s'%id_list)
+#     pl.clf()
+#     pl.plot(time,flux,'k.')
+#     pl.savefig('test%s'%id_list)
 
     id_list = [id_list]
 

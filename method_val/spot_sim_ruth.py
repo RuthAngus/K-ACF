@@ -3,6 +3,7 @@
 # This version produces star spots from the entire Kepler lc, then adds to individual quarters
 
 
+import numpy as np
 import scipy
 import scipy.io
 import pylab
@@ -59,8 +60,8 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         lightcurve.extend(numpy.array(lc))
         time2.extend(numpy.array(time))
 
-
-
+    print type(time2), len(time2)
+    time2 = list(np.arange(min(time2), max(time2), 0.02043359821692))
     # myperiod = float(myperiod[0])
     print 'Period = ', myperiod
     dur = (max(time2) - min(time2))
@@ -138,13 +139,14 @@ def mklc(nspot = 200, incl = (scipy.pi)*5./12., amp = 0.01, \
         dF_tot -= area * mu
         dF_tot0 -= area * mu0
 
+    print dur, len(time2)
+    time2 = np.arange(min(time2), max(time2), 0.02043359821692)
 
-
-    print 'Adding noise...'
-    # ADD NOISE
-    noi = pylab.normal(0, 1, npt) * noise
-    dF_tot += noi
-    dF_tot0 += noi
+#     print 'Adding noise...'
+#     # ADD NOISE
+#     noi = pylab.normal(0, 1, npt) * noise
+#     dF_tot += noi
+#     dF_tot0 += noi
 
     amp_eff = dF_tot.max()-dF_tot.min()
     nspot_eff = area_tot / scale_fac / ff
