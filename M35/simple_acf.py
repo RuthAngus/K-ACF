@@ -42,7 +42,7 @@ def simple_acf(x, y):
     AT = np.vstack((x, np.ones_like(x)))
     ATA = np.dot(AT, AT.T)
     m, b = np.linalg.solve(ATA, np.dot(AT, y))
-    y = y - (m*x + b)
+    y -= m*x + b
 
     # perform acf
     acf = dan_acf(y)
